@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Write(**)",
+      "Edit(**)",
+      "Glob(**)",
+      "Grep(**)",
+      "WebSearch",
+      "WebFetch(*)",
+      "Bash(ls:*)",
+      "Bash(cp:*)",
+      "Bash(cp -r:*)",
+      "Bash(mkdir:*)",
+      "Bash(mkdir -p:*)",
+      "Bash(rm:*)",
+      "Bash(mv:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(sort:*)",
+      "Bash(grep:*)",
+      "Bash(jq:*)",
+      "Bash(perl:*)",
+      "Bash(awk:*)",
+      "Bash(sed:*)",
+      "Bash(echo:*)",
+      "Bash(command:*)",
+      "Read(/Users/gts/dev/**)",
+      "Write(/Users/gts/dev/**)",
+      "Edit(/Users/gts/dev/**)",
+      "Bash(claude:*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(bash:*)",
+      "Bash(taskmd:*)",
+      "Bash(ctags:*)",
+      "Bash(ast-grep:*)",
+      "Bash(sg:*)"
+    ]
+  }
+}
