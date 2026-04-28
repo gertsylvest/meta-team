@@ -2,6 +2,10 @@
 
 Agents that use the `taskmd` CLI directly MUST follow this reference. **Never guess at flags** — if a command is not listed here, run `taskmd <command> --help` before using it.
 
+## Critical: taskmd availability
+
+If `taskmd` is not available (command not found, or errors on every invocation), **this is a stop-the-line blocker**. Raise a `notify` signal to the orchestrator immediately and do not proceed with any sprint work. Sprint planning and execution depend entirely on taskmd being functional.
+
 ## Listing tasks
 
 ```bash
@@ -92,9 +96,35 @@ taskmd status <task-id>      # metadata for a specific task
 
 ## Creating a task
 
+The title is a **positional argument** — there is no `--title` flag.
+
 ```bash
-taskmd add --title "Task title" --status pending --priority medium
+# Basic task
+taskmd add "Fix the login bug"
+
+# With metadata
+taskmd add "Implement OAuth" --priority high --tags backend,auth,sprint-1
+
+# With parent task
+taskmd add "Sub-task title" --parent 001 --tags sprint-1
+
+# Capture file path (required to add body content)
+TASK_FILE=$(taskmd add "Task title" --priority high --tags sprint-1 --format json | jq -r .file_path)
 ```
+
+### Adding body content (acceptance criteria, context)
+
+`taskmd add` creates a task file with placeholder content. Sprint tasks MUST have real acceptance criteria — never leave the placeholder `TODO` content. After creating a task, immediately edit the file:
+
+```bash
+# Step 1: create and capture the file path
+TASK_FILE=$(taskmd add "Implement login flow" --priority high --tags sprint-1 --format json | jq -r .file_path)
+
+# Step 2: use the Edit tool to open $TASK_FILE and replace the placeholder sections
+# (## Objective, ## Tasks, ## Acceptance Criteria) with real content
+```
+
+The task file is plain markdown — write real content directly into the `## Acceptance Criteria` and `## Objective` sections. Do not leave `TODO` placeholders in any sprint task body.
 
 ## Validate tasks
 

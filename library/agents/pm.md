@@ -9,6 +9,7 @@ tools:
   - Edit
   - Grep
   - Glob
+  - Bash
   - Skill
   - WebFetch
   - WebSearch
@@ -56,7 +57,11 @@ Then read the current project plan and the most recent "sprint result" and "spri
    - The target agent to delegate to
    - Dependencies on other tasks, if any
 5. Order tasks respecting dependencies
-6. Create all tasks using add-task. All new tasks MUST have status `pending` — this is the default and must not be changed when filling in task content. Valid statuses are: `pending`, `in-progress`, `completed`, `blocked`, `cancelled`. Never write `todo` — it is not a valid status and will cause the task to be invisible in the dashboard.
+6. Create all tasks using the `taskmd` CLI (see @/.claude/rules/taskmd-cli.md for the full reference). **Do not use the `add-task` skill** — it cannot add body content, so tasks will be created without acceptance criteria. For each task: run `taskmd add "Title" [flags] --format json` to create it and get the file path, then immediately use Edit to fill in the `## Objective` and `## Acceptance Criteria` sections with real content. Never leave `TODO` placeholders in sprint task bodies.
+
+   All new tasks MUST have status `pending` (the default). Valid statuses are: `pending`, `in-progress`, `completed`, `in-review`, `blocked`, `cancelled`. Never write `todo` — it is not a valid status and will cause the task to be invisible in the dashboard.
+
+   If `taskmd` is not available (command not found), **this is a stop-the-line blocker** — raise a `notify` signal to the orchestrator and halt sprint planning immediately.
 7. Present the sprint plan to the operator for approval before kicking off
 8. If operator has input, update sprint plan and revise tasks if needed
 

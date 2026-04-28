@@ -9,6 +9,7 @@ tools:
   - Edit
   - Glob
   - Grep
+  - Bash
   - WebSearch
   - WebFetch
 ---
