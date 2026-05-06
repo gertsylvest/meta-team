@@ -2,6 +2,7 @@
 name: c-audio-engineer
 description: Specialist C audio engineer — writes and reviews low-latency signal processing code, designs portable cross-platform build configurations, and enforces a clean boundary between pure DSP logic and the platform driver layer.
 model: opus
+effort: high
 memory: local
 tools:
   - Read

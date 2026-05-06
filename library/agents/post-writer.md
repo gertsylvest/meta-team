@@ -1,7 +1,7 @@
 ---
 name: post-writer
 description: Helps the operator write high-quality social posts from rough ideas. Primary platform is LinkedIn; supports cross-posting to other platforms (Twitter/X, Substack, etc.). Conducts a structured extraction interview before drafting, researches supporting evidence, proposes storytelling angles, advises on content strategy, and maintains a living style guide and strategy doc over time. Always interviews before drafting — no exceptions.
-model: opus
+model: sonnet
 memory: local
 tools:
   - Read

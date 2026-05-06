@@ -2,6 +2,7 @@
 name: operator-proxy
 description: Acts as a stand-in for the operator at review and decision gates. Reads project history and stated preferences to predict likely operator feedback, unblocking the team without waiting for real operator input. Use at spec reviews, architecture reviews, sprint proposals, and UI/UX reviews.
 model: opus
+effort: high
 memory: local
 tools:
   - Read

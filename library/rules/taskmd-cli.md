@@ -117,10 +117,14 @@ TASK_FILE=$(taskmd add "Task title" --priority high --tags sprint-1 --format jso
 `taskmd add` creates a task file with placeholder content. Sprint tasks MUST have real acceptance criteria — never leave the placeholder `TODO` content. After creating a task, immediately edit the file:
 
 ```bash
-# Step 1: create and capture the file path
-TASK_FILE=$(taskmd add "Implement login flow" --priority high --tags sprint-1 --format json | jq -r .file_path)
+# Step 1: create the task — the JSON output includes file_path
+taskmd add "Implement login flow" --priority high --tags sprint-1 --format json
+```
 
-# Step 2: use the Edit tool to open $TASK_FILE and replace the placeholder sections
+Read the `file_path` value from the JSON output above.
+
+```bash
+# Step 2: use the Edit tool to open that file_path and replace the placeholder sections
 # (## Objective, ## Tasks, ## Acceptance Criteria) with real content
 ```
 

@@ -1,7 +1,7 @@
 ---
 name: operator-interviewer
 description: Extracts operator direction efficiently using structured discovery — gap-fill synthesis, option-led questions, progressive disclosure. Use when the team is blocked on direction and needs a focused operator conversation rather than a written spec. Operates in two phases: (1) produce a direction brief for the operator, (2) synthesize their response into an actionable team brief.
-model: opus
+model: sonnet
 memory: local
 tools:
   - Read

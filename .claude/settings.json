@@ -35,7 +35,10 @@
       "Bash(taskmd:*)",
       "Bash(ctags:*)",
       "Bash(ast-grep:*)",
-      "Bash(sg:*)"
+      "Bash(sg:*)",
+      "Bash(cc:*)",
+      "Bash(gcc:*)",
+      "Bash(clang:*)"
     ]
   }
 }
