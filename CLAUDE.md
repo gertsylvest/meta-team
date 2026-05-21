@@ -33,6 +33,20 @@ The workflow has two modes:
 1. **Library mode** — defining and refining new agents, orchestrators, skills, rules, and teams, adding them to the library when ready
 2. **Bootstrap mode** — interactive conversation to understand a new project's needs, then running a script to scaffold that project from the library
 
+## Repo arrangement: private source, public curated mirror
+
+This local working directory is the **private** meta-team repo (`meta-team-private` on GitHub). All work happens here — new drafts, in-progress agents, experimental skills.
+
+A separate **public** repo (`meta-team` on GitHub) is a curated subset, snapshot-published from this one. The public repo is never edited directly.
+
+- **What's published**: only files listed in `.publish-manifest` at the repo root.
+- **How to publish**: from this repo, run `./scripts/publish.sh "<commit message>"`. The script clears the public worktree (default location: `~/dev/meta-team-public/`) and re-snapshots from the manifest, then commits and pushes.
+- **Preview without committing**: `./scripts/publish.sh --diff` shows what would change.
+- **To expose a new file publicly**: add a line to `.publish-manifest`, then publish.
+- **To remove a file from public**: delete the line from `.publish-manifest`, then publish. The next snapshot will not include it.
+
+When a new agent, skill, rule, or other library file is created, it is **private by default**. Promoting it to the public mirror requires an explicit manifest edit + publish.
+
 ## Folder Structure
 
 ### Library (`/library`)

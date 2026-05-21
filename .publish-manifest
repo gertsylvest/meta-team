@@ -1,0 +1,92 @@
+# .publish-manifest — files and folders snapshot-published to the public meta-team repo.
+#
+# One path, glob, or directory per line. # starts a comment. Blank lines ignored.
+# Paths are relative to the private repo root.
+# A directory ending in / publishes all its contents recursively.
+#
+# Workflow:
+#   1. Add lines for files/folders you want exposed publicly.
+#   2. Run ./scripts/publish.sh from the private repo root.
+#   3. The script clears the public worktree and re-snapshots from the manifest,
+#      so removing a line here will remove the file from the public repo on the next publish.
+
+# --- Root files ---
+.gitignore
+CLAUDE.md
+LICENSE
+README.md
+
+# --- Claude Code project config (shared between private and public) ---
+.claude/settings.json
+.claude/rules/documentation-structure.md
+.claude/rules/ways-of-working.md
+
+# --- Library — agents ---
+library/agents/architect.md
+library/agents/audio-architect.md
+library/agents/c-audio-engineer.md
+library/agents/codebase-analyst.md
+library/agents/designer.md
+library/agents/developer.md
+library/agents/dynamic-ux-designer.md
+library/agents/improvement-analyst.md
+library/agents/mascot-bud-spencer.md
+library/agents/mascot-budgie.md
+library/agents/mascot-dolphin.md
+library/agents/mascot-octopus.md
+library/agents/operator-interviewer.md
+library/agents/operator-proxy.md
+library/agents/pm.md
+library/agents/researcher.md
+library/agents/svelte-ui-engineer.md
+library/agents/wasm-audio-engineer.md
+
+# post-writer was renamed to post-interviewer in private; not currently published.
+# Uncomment when ready to publish the new writing-project agents:
+# library/agents/post-interviewer.md
+# library/agents/post-researcher.md
+# library/agents/post-editor.md
+
+# --- Library — orchestrators ---
+library/orchestrators/dev-team-orchestrator.md
+library/orchestrators/research-orchestrator.md
+
+# --- Library — rules ---
+library/rules/documentation-structure.md
+library/rules/taskmd-cli.md
+library/rules/ways-of-working.md
+# library/rules/writing-project-structure.md  # uncomment to publish
+
+# --- Library — skills (each folder publishes recursively) ---
+library/skills/audio-fft-sanity/
+library/skills/dembrandt/
+library/skills/emscripten-env-audit/
+library/skills/faust-build/
+library/skills/faust-header-gen/
+library/skills/log-pattern-scan/
+library/skills/wasm-module-inspect/
+library/skills/wasm-worklet-smoke/
+# library/skills/excalidraw-diagrams/  # uncomment to publish
+
+# --- Library — teams ---
+library/teams/audio-prototype-team.md
+library/teams/dev-team.md
+library/teams/dynamic-ui-architect-team.md
+library/teams/dynamic-ui-team.md
+library/teams/faust-exploration-team.md
+library/teams/khipu-analysis-team.md
+# library/teams/eteu-engagement-team.md  # uncomment to publish
+
+# --- Bootstrap scripts ---
+scripts/new-project.sh
+scripts/publish.sh
+
+# --- Project templates ---
+templates/CLAUDE.md
+templates/git-info-exclude
+templates/operator-profile-template.md
+templates/settings-development.json
+templates/settings-research.json
+
+# --- The manifest itself (so the workflow is visible on the public side too) ---
+.publish-manifest
