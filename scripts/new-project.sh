@@ -12,7 +12,7 @@
 #     --skills "log-pattern-scan" \
 #     --rules "ways-of-working,documentation-structure"
 #
-# --type:   "development" or "research" (default: development)
+# --type:   "development", "research", or "personal-assistant" (default: development)
 # --purpose: short project description written into the root CLAUDE.md
 # --parent: parent directory for the new project (default: ~/dev)
 #           Use this to create projects in subdirectories, e.g. --parent ~/dev/audiospace
@@ -102,6 +102,98 @@ EOF
     echo "  [+] Rule: taskmd-cli (auto-included for development projects)"
   else
     echo "  [!] taskmd-cli rule not found in library — skipping"
+  fi
+fi
+
+if [[ "$PROJECT_TYPE" == "personal-assistant" ]]; then
+  # PA project layout: tasks/, daily-log/, domains/, recurring-obligations.md, scripts/
+  mkdir -p "$PROJECT_DIR/tasks"
+  mkdir -p "$PROJECT_DIR/daily-log"
+  mkdir -p "$PROJECT_DIR/domains/inbox/processed"
+  mkdir -p "$PROJECT_DIR/domains/linkedin/processed"
+  mkdir -p "$PROJECT_DIR/scripts"
+  echo "  [+] tasks/, daily-log/, domains/{inbox,linkedin}/, scripts/"
+
+  cat > "$PROJECT_DIR/.taskmd.yaml" <<'EOF'
+dir: ./tasks
+EOF
+  echo "  [+] .taskmd.yaml"
+
+  cat > "$PROJECT_DIR/.gitignore" <<'EOF'
+# Task files are local-only and not committed
+/tasks
+
+# Processed-item logs are local-only
+/domains/*/processed/
+
+# Local secrets and CLI state
+.env
+.env.*
+/scripts/*/.cache
+/scripts/*/.session
+/scripts/*/.venv
+EOF
+  echo "  [+] .gitignore"
+
+  # Starter domain rules files — empty so operator must populate before first scan
+  cat > "$PROJECT_DIR/domains/inbox/rules.md" <<'EOF'
+# Inbox Rules
+
+> TODO — populate this before the first inbox scan.
+> See the inbox-monitor agent file for the expected sections (VIPs, Always action, Always ignore, Default, Follow-up policy, Gmail labels).
+
+## VIPs
+
+## Always action
+
+## Always ignore
+
+## Default
+- Anything else → ambiguous (defer to operator)
+
+## Follow-up policy
+
+## Gmail labels
+EOF
+
+  cat > "$PROJECT_DIR/domains/linkedin/rules.md" <<'EOF'
+# LinkedIn Rules
+
+> TODO — populate this before the first LinkedIn scan.
+> See the linkedin-monitor agent file for the expected sections (Priority contacts, Always action, Always ignore, Default, Follow-up policy).
+
+## Priority contacts
+
+## Always action
+
+## Always ignore
+
+## Default
+- Anything else → ambiguous (defer to operator)
+
+## Follow-up policy
+EOF
+  echo "  [+] domains/{inbox,linkedin}/rules.md (starter files)"
+
+  cat > "$PROJECT_DIR/recurring-obligations.md" <<'EOF'
+# Recurring Obligations
+
+> Long-running cadenced obligations the PA should materialize tasks for (e.g. yearly company report, quarterly VAT, monthly bookkeeping). Populated as new domains come online.
+EOF
+  echo "  [+] recurring-obligations.md"
+
+  # Copy operator-profile template to project root
+  OP_PROFILE_SRC="$TEMPLATES_DIR/operator-profile-template.md"
+  if [[ -f "$OP_PROFILE_SRC" ]]; then
+    cp "$OP_PROFILE_SRC" "$PROJECT_DIR/operator-profile.md"
+    echo "  [+] operator-profile.md"
+  fi
+
+  # Always include the taskmd CLI reference rule for PA projects
+  TASKMD_CLI_SRC="$LIBRARY_DIR/rules/taskmd-cli.md"
+  if [[ -f "$TASKMD_CLI_SRC" ]]; then
+    cp "$TASKMD_CLI_SRC" "$PROJECT_DIR/.claude/rules/taskmd-cli.md"
+    echo "  [+] Rule: taskmd-cli (auto-included for PA projects)"
   fi
 fi
 
@@ -199,6 +291,8 @@ fi
 # --- Copy .claude/settings.json from template ---
 if [[ "$PROJECT_TYPE" == "research" ]]; then
   SETTINGS_TEMPLATE="$TEMPLATES_DIR/settings-research.json"
+elif [[ "$PROJECT_TYPE" == "personal-assistant" ]]; then
+  SETTINGS_TEMPLATE="$TEMPLATES_DIR/settings-pa.json"
 else
   SETTINGS_TEMPLATE="$TEMPLATES_DIR/settings-development.json"
 fi
@@ -210,7 +304,11 @@ else
 fi
 
 # --- Write CLAUDE.md ---
-CLAUDE_TEMPLATE="$TEMPLATES_DIR/CLAUDE.md"
+if [[ "$PROJECT_TYPE" == "personal-assistant" ]]; then
+  CLAUDE_TEMPLATE="$TEMPLATES_DIR/CLAUDE-pa.md"
+else
+  CLAUDE_TEMPLATE="$TEMPLATES_DIR/CLAUDE.md"
+fi
 if [[ -f "$CLAUDE_TEMPLATE" ]]; then
   PURPOSE_TEXT="${PROJECT_PURPOSE:-TODO short project description}"
   # Pass values as env vars so special characters in purpose never break the regex

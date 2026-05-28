@@ -20,6 +20,8 @@ README.md
 .claude/settings.json
 .claude/rules/documentation-structure.md
 .claude/rules/ways-of-working.md
+# NOTE: .claude/skills/ is intentionally NOT published — it holds private
+# operator-facing workflows. Do not add .claude/skills/ here.
 
 # --- Library — agents ---
 library/agents/architect.md
@@ -38,6 +40,7 @@ library/agents/operator-interviewer.md
 library/agents/operator-proxy.md
 library/agents/pm.md
 library/agents/researcher.md
+library/agents/rust-audio-engineer.md
 library/agents/svelte-ui-engineer.md
 library/agents/wasm-audio-engineer.md
 
@@ -59,12 +62,17 @@ library/rules/ways-of-working.md
 
 # --- Library — skills (each folder publishes recursively) ---
 library/skills/audio-fft-sanity/
+library/skills/cargo-bench-rt/
+library/skills/cbindgen-verify/
 library/skills/dembrandt/
 library/skills/emscripten-env-audit/
 library/skills/faust-build/
 library/skills/faust-header-gen/
 library/skills/log-pattern-scan/
+library/skills/miri-dsp/
+library/skills/rust-rt-audit/
 library/skills/wasm-module-inspect/
+library/skills/wasm-pack-build/
 library/skills/wasm-worklet-smoke/
 # library/skills/excalidraw-diagrams/  # uncomment to publish
 
