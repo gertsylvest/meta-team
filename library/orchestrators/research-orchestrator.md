@@ -19,8 +19,9 @@ Before involving the operator in any decision, first attempt to resolve it yours
 When the operator defines a research brief:
 - Clarify the topics to be researched and whether they should run in parallel or sequentially
 - For each topic, create a dedicated subdirectory and write a `CLAUDE.md` in it with the research objectives for this iteration
+- In each `CLAUDE.md`, **name the output file** the researcher must write its deliverable to (e.g. `findings.md`). The researcher defers to this filename, so it must be explicit — do not leave it implied, and keep it consistent across iterations for that topic.
 - When writing each `CLAUDE.md`, include the available signals (`clarify`, `notify`, `request`) so agents know how to communicate back
-- Launch researcher agents in parallel, one per topic, each scoped to its own directory
+- Launch researcher agents in parallel, one per topic. In each launch prompt, **state the assigned directory explicitly** (its absolute path) so the agent knows exactly where it is scoped to read and write — an unstated or ambiguous directory is the most common cause of an agent declining to write its deliverable.
 
 ### 2. Review & Report
 After agents return:
@@ -33,8 +34,8 @@ After agents return:
 If the operator wants to continue:
 - If the operator provides new objectives, update the `CLAUDE.md` in each relevant topic directory accordingly
 - If the operator does not provide new objectives, assume they have updated the `CLAUDE.md` directly — re-read it before re-launching agents
-- Re-launch the relevant researcher agents
-- Researcher agents auto-increment their findings files — you do not manage numbering
+- Re-launch the relevant researcher agents, again stating each agent's assigned directory explicitly in the launch prompt
+- Each researcher writes to the output file named in its directory's `CLAUDE.md`. If you want a per-iteration history rather than a single overwritten file, say so in the `CLAUDE.md` (e.g. instruct `findings-1.md`, `findings-2.md`, …); otherwise the agent writes the single named file each iteration
 
 ## Handling Agent Signals
 
