@@ -187,6 +187,18 @@ claude mcp add playwright npx @playwright/mcp@latest
 
 This registers Playwright at the local user-config level scoped to the project (not committed). Add any other project-specific MCP servers the same way. For development projects using the interaction-designer or svelte-ui-engineer agents, Playwright is mandatory.
 
+### Post-bootstrap: pin `env.PATH` (toolchain-heavy projects)
+
+Fresh subagent shells are non-login and do not source the operator's shell profile, so they lose PATH entries for toolchains installed outside the system path — `cargo`/`rustc` (`~/.cargo/bin`, `~/.rustup/toolchains/.../bin`), `taskmd` and other Homebrew tools (`/opt/homebrew/bin`), `emsdk`/`node` for WASM. The symptom is agents prepending an `export PATH=…` preamble to every Bash call (hundreds of redundant retries over a project).
+
+For development projects that build with such toolchains (anything Rust/WASM/C++, in particular), pin a full PATH superset in `.claude/settings.local.json` (machine-specific, **not** the checked-in `settings.json`):
+
+```json
+{ "env": { "PATH": "<full PATH superset incl. ~/.cargo/bin, toolchain bin, /opt/homebrew/bin, emsdk, node>" } }
+```
+
+Capture the operator's current PATH (`echo $PATH` in their login shell) as the basis. This fixes the toolchain-not-found problem once for all shells and subagents. Do **not** put machine-specific paths in `settings.json`.
+
 ---
 
 ### Development projects (mandatory rules)

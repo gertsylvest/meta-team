@@ -32,9 +32,12 @@ else
     echo "No Claude project folder found at: $JSONL_DIR" >&2
     exit 1
   fi
+  # Recurse so subagent sidechains (<session>/subagents/agent-*.jsonl, isSidechain:true)
+  # are included. Orchestrator/main transcripts see only ~15% of tool activity; the rest
+  # lives in sidechains. Scanning only the top level massively undercounts errors/loops.
   while IFS= read -r -d '' f; do
     JSONL_FILES+=("$f")
-  done < <(find "$JSONL_DIR" -maxdepth 1 -name "*.jsonl" -print0 | sort -z)
+  done < <(find "$JSONL_DIR" -name "*.jsonl" -print0 | sort -z)
 fi
 
 if [[ ${#JSONL_FILES[@]} -eq 0 ]]; then
@@ -157,8 +160,16 @@ scan_trialerror() {
 
 # ── Main loop ─────────────────────────────────────────────────────────────────
 
+JSONL_DIR="${JSONL_DIR:-}"
 for FILE in "${JSONL_FILES[@]}"; do
-  echo "=== $(basename "$FILE") ==="
+  # Show the path relative to the project folder so sidechains
+  # (subagents/agent-*.jsonl) are distinguishable from the main transcript.
+  if [[ -n "$JSONL_DIR" && "$FILE" == "$JSONL_DIR"/* ]]; then
+    DISPLAY="${FILE#"$JSONL_DIR"/}"
+  else
+    DISPLAY="$(basename "$FILE")"
+  fi
+  echo "=== $DISPLAY ==="
 
   case "$SCAN" in
     summary)                   scan_summary    "$FILE" ;;

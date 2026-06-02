@@ -17,6 +17,14 @@ Arguments are in `$ARGUMENTS`:
 
 If no arguments are provided, ask the user before proceeding.
 
+When given a project root, the scan recurses into subagent **sidechains**
+(`<session>/subagents/agent-*.jsonl`, marked `isSidechain: true`) as well as the
+top-level session transcripts. This matters: the orchestrator/main transcript records
+only ~15% of tool activity — the bulk of tool calls, errors, and loops happen inside
+subagents. Scanning only the top level can undercount errors by an order of magnitude.
+Each finding is headed by its path relative to the project folder, so sidechain
+findings are attributable to the agent that produced them.
+
 ### Run the scan
 
 The scan script lives alongside this file. Run it directly:

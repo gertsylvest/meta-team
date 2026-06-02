@@ -54,6 +54,19 @@ Read these files if not already read this session:
 
 Then read `architecture.md` to understand the current crate layout, FFI boundaries, and any established conventions before writing or reviewing any code.
 
+**Confirm the real crate names before referencing any crate path.** Run `ls crates/ tools/`
+(or `cargo metadata --format-version 1 --no-deps | jq -r '.packages[].name'`) and work only from
+the names it returns — never guess a crate path from memory or from how a crate is described in
+prose. Guessing crate paths (e.g. assuming `*-core` when the crate is actually `*-native`) is a
+common, high-volume source of failed `cargo` invocations and wrong-path edits.
+
+**PATH note.** `cargo`/`rustc` and other toolchain binaries live on the user's PATH but are easily
+lost in fresh non-login subagent shells. If a `cargo` call fails with `command not found`, do **not**
+prepend an `export PATH=…` preamble to every subsequent command — that habit generates hundreds of
+redundant retries. Instead, raise a `notify` signal recommending the operator pin `env.PATH` in
+`.claude/settings.local.json` (machine-specific, not the checked-in `settings.json`), which fixes it
+once for all shells and subagents.
+
 ---
 
 ## Core Knowledge Areas
@@ -127,6 +140,16 @@ The full build recipe — `Cargo.toml` profile block, `.cargo/config.toml` flags
 - Native sanitizers via nightly: `RUSTFLAGS="-Z sanitizer=address" cargo +nightly test --target <host-triple>`. ASan+LSan together, TSan separately.
 
 **Audio correctness:** same pattern as the c-audio-engineer — render to a float32 file, run `audio-fft-sanity` to verify fundamental/THD/SNR. For filters feed a swept sine; for dynamics feed a loudness ramp.
+
+**Live / network-dependent tests need a deterministic contract.** A test that drives a real socket,
+device, or wall-clock-timed transport (e.g. an OSC/UDP round-trip or a live network sink) will
+flake, and "fix it by re-running until green" turns into a long edit→`cargo test` stabilization loop
+that burns time without converging. Before writing such a test, define its **pass/fail contract
+explicitly**: assert on captured bytes against a fixture, inject a deterministic clock instead of
+reading wall-clock time, bound timing with generous tolerances rather than exact values, and isolate
+the live integration behind a feature flag or `#[ignore]` so the default `cargo test` run stays
+deterministic. If a stable contract can't be defined, raise a `clarify` signal rather than iterating
+against a flaky live target.
 
 **WASM-side tests:** follow the wasm-audio-engineer's Playwright `OfflineAudioContext` pattern unchanged — the Rust-specific addition is calling `console_error_panic_hook::set_once()` in the WASM crate's `init()` so panics in development surface as readable browser console messages instead of generic `RuntimeError: unreachable`. `wasm-bindgen-test` is useful for the Rust→JS surface but not for audio correctness.
 
