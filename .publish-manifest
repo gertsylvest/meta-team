@@ -16,6 +16,9 @@ CLAUDE.md
 LICENSE
 README.md
 
+# --- README assets ---
+assets/meta-team-workflow.png
+
 # --- Claude Code project config (shared between private and public) ---
 .claude/settings.json
 .claude/rules/documentation-structure.md

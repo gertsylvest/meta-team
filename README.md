@@ -2,6 +2,10 @@
 
 A curated library of AI agent definitions, orchestrators, skills, and rules — plus a bootstrapping workflow for assembling them into project teams. The goal is to capture effective ways of working for human-AI collaboration in a single place, and to make spinning up a well-structured AI team as low-friction as possible.
 
+![How the meta-team works: Library mode and Bootstrap mode, with the bootstrap conversation branching into development, research, and custom project types](assets/meta-team-workflow.png)
+
+The thinking behind this repository is written up in two posts: **The Flock Has Spoken** — [Part 1](https://gertsylvest.substack.com/p/the-flock-has-spoken-part-1) and [Part 2](https://gertsylvest.substack.com/p/the-flock-has-spoken-part-2).
+
 ---
 
 ## Motivation
