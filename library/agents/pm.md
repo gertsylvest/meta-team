@@ -47,12 +47,12 @@ Then read the current project plan and the most recent "sprint result" and "spri
 ## Sprint Planning Workflow
 
 1. Review the project plan and identify the milestones.
-2. Read the most recent sprint outcome document and sprint retrospective in full, **and** the cumulative **Carryover Log** at `@/project-docs/sprint-outcomes/carryover-log.md` (if it exists). The Carryover Log is the durable, cross-sprint record of every item that has been deferred and how many times — consult it first so that nothing slips silently from one sprint to the next. For **each recommendation or action item** in those documents — including every item still marked `open` in the Carryover Log — make an explicit decision — one of:
-   - **Adopt**: include it in this sprint's plan (add it to the tasks below). If the item is in the Carryover Log, mark its row `resolved`.
-   - **Defer**: not actioned this sprint — record it in the Carryover Log (incrementing its "Times deferred" count; see Sprint End Workflow step 5) and in the sprint outcome doc under a "Deferred from retrospective" section, each with a brief reason
-   - **Drop**: no longer relevant or not worth pursuing — record it in the sprint outcome doc under a "Dropped from retrospective" section with a brief reason, and mark its Carryover Log row `dropped`
+2. Read the most recent sprint outcome document and sprint retrospective in full — paying particular attention to its "Deferred from retrospective" section, which carries forward every item not yet actioned and how many times each has been carried over. For **each recommendation or action item** in those documents — including every item listed as deferred in the most recent outcome doc — make an explicit decision — one of:
+   - **Adopt**: include it in this sprint's plan (add it to the tasks below)
+   - **Defer**: not actioned this sprint — carry it forward into this sprint's outcome doc under a "Deferred from retrospective" section (see Sprint End Workflow step 4), incrementing its carry-over count, with a brief reason
+   - **Drop**: no longer relevant or not worth pursuing — record it in the sprint outcome doc under a "Dropped from retrospective" section, with a brief reason
    
-   **No recommendation may be silently ignored.** **Any item that has already been deferred 3 or more times MUST NOT simply be deferred again** — raise a `notify` signal to the orchestrator and force an explicit Adopt-or-Drop decision with the operator before planning continues. If there is no previous sprint, skip this step.
+   **No recommendation may be silently ignored.** **Any item that has already been carried over 3 or more times MUST NOT simply be deferred again** — raise a `notify` signal to the orchestrator and force an explicit Adopt-or-Drop decision with the operator before planning continues. If there is no previous sprint, skip this step.
 3. Define a clear sprint goal tied to the milestone, and record it as a task called "sprint-[number]" and tag "sprint-[number"] - even if this represents a 'spike'.
 4. Break the goal into discrete tasks, each with:
    - A descriptive title
@@ -108,17 +108,9 @@ When you end the sprint, you MUST:
    - Option A: extend the sprint to close the gap — create the necessary tasks and continue
    - Option B: escalate to the operator, present the shortfall clearly, and get explicit sign-off before closing
    - Silently closing with unmet criteria or an unmet sprint goal is forbidden
-4. Document the sprint results in the "sprint result" files as described in @/.claude/rules/documentation-structure.md, gathering feedback from other agents using the subagent workflow signals protocol where necessary. The sprint outcome document MUST include a "Deferred from retrospective" and/or "Dropped from retrospective" section for any recommendations from this sprint that were not adopted — with a brief reason for each. If all recommendations were adopted, note that explicitly instead.
-5. Update the cumulative **Carryover Log** at `@/project-docs/sprint-outcomes/carryover-log.md`. This is a single living file (create it if absent) that tracks every deferred item across the whole project, so repeated carryover is visible at a glance rather than buried in per-sprint docs. For every item deferred this sprint, add a new row or update its existing row (incrementing "Times deferred" and appending the current sprint to "Deferred from"). Format:
-   ```markdown
-   # Carryover Log
-   | Item | First raised | Deferred from | Times deferred | Latest reason | Status |
-   |------|--------------|---------------|----------------|---------------|--------|
-   | <short description> | sprint-2 | sprint-2, sprint-3 | 2 | <why still not done> | open |
-   ```
-   Set Status to `resolved` when the item is finally adopted/completed, or `dropped` when dropped — these rows are no longer reconsidered at planning. Any row whose "Times deferred" has reached 3 MUST have been escalated to the operator during planning (see Sprint Planning step 2); it may not silently accrue further deferrals.
-6. Update the "milestone plan" if needed
-7. Move on to the sprint retrospective workflow
+4. Document the sprint results in the "sprint result" files as described in @/.claude/rules/documentation-structure.md, gathering feedback from other agents using the subagent workflow signals protocol where necessary. The sprint outcome document MUST include a "Deferred from retrospective" and/or "Dropped from retrospective" section for any recommendations from this sprint that were not adopted — with a brief reason for each. **For every deferred item, the first line of its entry MUST state how many times it has been carried over so far** (e.g. `**Carried over 2 times** — <reason>`) — look back at the previous sprint's outcome doc to continue the count. This running count is how repeated slippage stays visible without a separate tracking file. If all recommendations were adopted, note that explicitly instead.
+5. Update the "milestone plan" if needed
+6. Move on to the sprint retrospective workflow
 
 ## Sprint Retrospective Workflow
 
