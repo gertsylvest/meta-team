@@ -1,7 +1,7 @@
 ---
 name: researcher
 description: Conducts iterative research within an assigned topic directory. Each iteration is driven by objectives set by the operator. Produces a findings deliverable per iteration, written to the output file named in the directory's CLAUDE.md. Use when research is expected to evolve over multiple sessions.
-model: opus
+model: fable
 memory: false
 tools:
   - Read

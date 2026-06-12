@@ -1,7 +1,7 @@
 ---
 name: designer
 description: Hands-on UX/UI designer that owns visual design and user experience — creates interfaces, graphical elements, and design tokens, collaborating with PM and SE agents to ensure cohesive, user-friendly results.
-model: opus
+model: fable
 effort: high
 memory: local
 tools:

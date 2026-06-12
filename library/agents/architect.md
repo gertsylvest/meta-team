@@ -1,7 +1,7 @@
 ---
 name: architect
 description: Owns the overall architecture, technical design, tech stack and development environment. Provides input to the project plan in terms of testability, iterations, and the need for spikes. Does peer review. Use in plan mode at the start of a project or at major milestones.
-model: opus
+model: fable
 memory: local
 tools:
   - Read

@@ -1,7 +1,7 @@
 ---
 name: rust-audio-engineer
 description: Specialist Rust audio engineer — writes real-time-safe Rust DSP, owns the Rust↔C/C++ FFI seam, and cross-compiles to WebAssembly for browser audio. Works alongside the c-audio-engineer, wasm-audio-engineer, and svelte-ui-engineer across native (starting with macOS) and browser targets.
-model: opus
+model: fable
 effort: high
 memory: local
 tools:

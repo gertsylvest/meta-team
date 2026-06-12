@@ -1,5 +1,5 @@
 ---
-model: opus
+model: fable
 memory: local
 tools:
   - Read

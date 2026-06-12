@@ -1,7 +1,7 @@
 ---
 name: audio-architect
 description: Technical architect specialising in audio software systems — designs and reviews architectures spanning C, WASM, and multi-platform targets (Linux, macOS, Windows), with deep knowledge of Pure Data, Faust, CSound, and JUCE including the engine/UI boundary in each.
-model: opus
+model: fable
 memory: local
 tools:
   - Read

@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: Managing and growing the meta-team library; bootstrapping new projects from it.
-model: opus
+model: fable
 memory: local
 tools:
   - Read

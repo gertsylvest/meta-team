@@ -1,7 +1,7 @@
 ---
 name: wasm-audio-engineer
 description: Specialist WebAssembly audio engineer — compiles C audio libraries to WASM via Emscripten, manages signal chains inside AudioWorklet processors, and handles dynamic loading and instantiation of WASM modules in the browser.
-model: opus
+model: fable
 memory: local
 tools:
   - Read

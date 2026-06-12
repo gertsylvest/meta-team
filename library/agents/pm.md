@@ -1,7 +1,7 @@
 ---
 name: pm
 description: Plans sprints and project plan, delegates to subagents, tracks progress
-model: sonnet
+model: opus
 memory: local
 tools:
   - Read
