@@ -30,7 +30,14 @@ fi
 
 BASELINE_NAME="rt-baseline"
 COMMITTED_BASELINE_DIR="$CRATE_DIR/benches/baselines/$BENCH_NAME"
-CRITERION_BASELINE_DIR="$CRATE_DIR/target/criterion/$BENCH_NAME/$BASELINE_NAME"
+# Resolve the real target dir: workspaces put it at the workspace root, and
+# CARGO_TARGET_DIR / .cargo/config.toml can move it. `cargo metadata` knows.
+TARGET_DIR=$(cd "$CRATE_DIR" && cargo metadata --format-version 1 --no-deps 2>/dev/null \
+  | grep -o '"target_directory":"[^"]*"' | head -n1 | sed -E 's/^"target_directory":"(.*)"$/\1/')
+if [[ -z "$TARGET_DIR" ]]; then
+  TARGET_DIR="${CARGO_TARGET_DIR:-$CRATE_DIR/target}"
+fi
+CRITERION_BASELINE_DIR="$TARGET_DIR/criterion/$BENCH_NAME/$BASELINE_NAME"
 
 echo "=== cargo-bench-rt: $CRATE_DIR :: $BENCH_NAME ==="
 echo ""
@@ -78,14 +85,14 @@ echo ""
 
 # Parse Criterion's "change: ... [+/- X%]" line. Criterion prints this when --baseline is set.
 # Example: "                        change: [-0.5% +1.2% +2.8%] (p = 0.42 > 0.05)"
-CHANGE_LINE=$(echo "$BENCH_OUT" | grep -E 'change:\s*\[' | head -n1 || true)
+CHANGE_LINE=$(echo "$BENCH_OUT" | grep -E 'change:[[:space:]]*\[' | head -n1 || true)
 if [[ -z "$CHANGE_LINE" ]]; then
   echo "FAIL   BUDGET        could not parse Criterion change line — baseline may be incompatible"
   exit 1
 fi
 
 # Pull the middle (best estimate) percentage from "[lo% mid% hi%]"
-MID_PCT=$(echo "$CHANGE_LINE" | sed -E 's/.*\[\s*[^ ]+\s+([+-]?[0-9]+\.[0-9]+)%.*/\1/')
+MID_PCT=$(echo "$CHANGE_LINE" | sed -E 's/.*\[[[:space:]]*[^ ]+[[:space:]]+([+-]?[0-9]+\.[0-9]+)%.*/\1/')
 if ! [[ "$MID_PCT" =~ ^[+-]?[0-9]+\.[0-9]+$ ]]; then
   echo "FAIL   BUDGET        could not extract regression percentage from: $CHANGE_LINE"
   exit 1

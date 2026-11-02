@@ -1,7 +1,6 @@
 ---
 name: wasm-audio-engineer
 description: Specialist WebAssembly audio engineer — compiles C audio libraries to WASM via Emscripten, manages signal chains inside AudioWorklet processors, and handles dynamic loading and instantiation of WASM modules in the browser.
-model: fable
 memory: local
 tools:
   - Read
@@ -12,6 +11,7 @@ tools:
   - Bash
   - WebFetch
   - WebSearch
+  - mcp__playwright
   - Skill
   - get-task-status
   - update-task
@@ -45,6 +45,8 @@ Read these files if not already read this session:
 1. @/.claude/rules/ways-of-working.md
 2. @/.claude/rules/documentation-structure.md
 3. @/.claude/rules/teams/team-definition.md
+4. `.claude/roles/wasm-audio-engineer.md`, if it exists: this project's rules for your role (remit, boundaries,
+   ceremonies). Where it conflicts with this profile, it wins.
 
 Then read `architecture.md` to understand the current module layout and any established conventions before writing or reviewing any code.
 
@@ -69,7 +71,7 @@ The Emscripten toolchain (`emcc`/`em++`) is the standard path from C audio code 
 **Memory model:**
 - Set the WASM heap size explicitly: `-s INITIAL_MEMORY=` / `-s MAXIMUM_MEMORY=` in Megabytes. Default is 16 MB which is insufficient for most audio workloads with large wavetables or IR buffers.
 - Enable `ALLOW_MEMORY_GROWTH=1` only if the memory footprint is genuinely unbounded at compile time; otherwise fix the size to avoid runtime reallocation stalls.
-- For `SharedArrayBuffer`-based audio (worklet ↔ main thread): compile with `-s USE_PTHREADS=1` and `-s PTHREAD_POOL_SIZE=N`; the page must be served with `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` headers.
+- For `SharedArrayBuffer`-based audio (worklet ↔ main thread): compile with `-pthread` and `-s PTHREAD_POOL_SIZE=N`; the page must be served with `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` headers.
 
 **Exported API surface:**
 - Only export the functions the JS/worklet layer needs: `-s EXPORTED_FUNCTIONS='["_init","_process","_destroy"]'`. Exporting everything bloats the module and exposes internals.
@@ -112,7 +114,7 @@ Audio applications often need to load DSP modules on demand (e.g. instrument plu
 
 **Passing modules to worklets:**
 - A compiled `WebAssembly.Module` is transferable via `postMessage`. Compile once on the main thread, then transfer to the `AudioWorkletNode` via `processorOptions` or `port.postMessage`. Do not fetch and compile inside the worklet scope.
-- For large modules, show a loading indicator and defer `AudioContext` resume until instantiation is complete — `AudioContext` must be in `suspended` state before the module is ready.
+- For large modules, show a loading indicator and defer `AudioContext` resume until instantiation is complete — keep the AudioContext suspended until the module is ready.
 
 **Module splitting and lazy loading:**
 - Split independent DSP modules (e.g. synthesis engine vs effects chain) into separate `.wasm` files so the initial load only fetches what is immediately needed.

@@ -18,11 +18,13 @@ README.md
 
 # --- README assets ---
 assets/meta-team-workflow.png
+assets/meta-team-workflow.excalidraw
 
 # --- Claude Code project config (shared between private and public) ---
 .claude/settings.json
 .claude/rules/documentation-structure.md
 .claude/rules/ways-of-working.md
+# NOTE: .claude/rules/local-environment.md and .publish-denylist are private by design.
 # NOTE: .claude/skills/ is intentionally NOT published — it holds private
 # operator-facing workflows. Do not add .claude/skills/ here.
 
@@ -34,6 +36,7 @@ library/agents/codebase-analyst.md
 library/agents/designer.md
 library/agents/developer.md
 library/agents/dynamic-ux-designer.md
+library/agents/elixir-phoenix-engineer.md
 library/agents/improvement-analyst.md
 library/agents/mascot-bud-spencer.md
 library/agents/mascot-budgie.md
@@ -42,8 +45,13 @@ library/agents/mascot-octopus.md
 library/agents/operator-interviewer.md
 library/agents/operator-proxy.md
 library/agents/pm.md
+library/agents/platform-engineer.md
+library/agents/release-engineer.md
 library/agents/researcher.md
 library/agents/rust-audio-engineer.md
+library/agents/rust-engineer.md
+library/agents/security-engineer.md
+library/agents/sre.md
 library/agents/svelte-ui-engineer.md
 library/agents/wasm-audio-engineer.md
 
@@ -55,10 +63,16 @@ library/agents/wasm-audio-engineer.md
 
 # --- Library — orchestrators ---
 library/orchestrators/dev-team-orchestrator.md
+library/orchestrators/ops-orchestrator.md
 library/orchestrators/research-orchestrator.md
 
 # --- Library — rules ---
+library/rules/deploy-safety.md
 library/rules/documentation-structure.md
+library/rules/git-history.md
+library/rules/ops-documentation-structure.md
+library/rules/ops-ways-of-working.md
+library/rules/secrets-handling.md
 library/rules/taskmd-cli.md
 library/rules/ways-of-working.md
 # library/rules/writing-project-structure.md  # uncomment to publish
@@ -68,16 +82,26 @@ library/skills/audio-fft-sanity/
 library/skills/cargo-bench-rt/
 library/skills/cbindgen-verify/
 library/skills/dembrandt/
-library/skills/emscripten-env-audit/
+# library/skills/emscripten-env-audit/  # demoted 2026-11-02: heavy edit needed (stale, project-specific); low priority
 library/skills/faust-build/
 library/skills/faust-header-gen/
+library/skills/figma-review/
+library/skills/hcloud-inventory/   # optional provider adapter for ops projects
 library/skills/log-pattern-scan/
+library/skills/markdown-diagrams-tables/
 library/skills/miri-dsp/
 library/skills/rust-rt-audit/
+library/skills/team-messaging/
 library/skills/wasm-module-inspect/
 library/skills/wasm-pack-build/
-library/skills/wasm-worklet-smoke/
+# library/skills/wasm-worklet-smoke/  # demoted 2026-11-02: hardwired to one project; low priority
 # library/skills/excalidraw-diagrams/  # uncomment to publish
+# Not published (2026-11-02): deploy-release, rollback-release, health-check, smoke-test
+# (unvalidated sketches); trading roles + ib-api (deferred to a later batch).
+
+# --- Library — documentation ---
+library/documentation/team-messaging-design.md
+# library/documentation/cross-team-messaging.md is an internal decision log — keep private.
 
 # --- Library — teams ---
 library/teams/audio-prototype-team.md
@@ -86,6 +110,7 @@ library/teams/dynamic-ui-architect-team.md
 library/teams/dynamic-ui-team.md
 library/teams/faust-exploration-team.md
 library/teams/khipu-analysis-team.md
+library/teams/ops-platform-team.md
 # library/teams/eteu-engagement-team.md  # uncomment to publish
 
 # --- Bootstrap scripts ---
@@ -94,9 +119,12 @@ scripts/publish.sh
 
 # --- Project templates ---
 templates/CLAUDE.md
+templates/deny-list-user.json
 templates/git-info-exclude
+templates/issue-backlog.md
 templates/operator-profile-template.md
 templates/settings-development.json
+templates/settings-ops.json
 templates/settings-research.json
 
 # --- The manifest itself (so the workflow is visible on the public side too) ---

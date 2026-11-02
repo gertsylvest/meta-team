@@ -12,14 +12,14 @@ Inspect a compiled `.wasm` binary to verify it is valid, understand its public A
 ## Requirements
 
 - **wabt** (`wasm-validate`, `wasm2wat`) — install via `brew install wabt` (macOS), `apt install wabt` (Linux), or from https://github.com/WebAssembly/wabt/releases
-- **wasm-opt** (optional, Binaryen) — install via `brew install binaryen` for feature reporting
+- **wasm-opt** (optional, Binaryen) — for feature reporting; install via `brew install binaryen` (macOS), `apt install binaryen` / `dnf install binaryen` (Linux), or from https://github.com/WebAssembly/binaryen/releases
 
 ## Instructions
 
 The argument is in `$ARGUMENTS`. Pass it directly to the inspection script:
 
 ```bash
-bash "$(dirname "$0")/inspect.sh" $ARGUMENTS
+bash .claude/skills/wasm-module-inspect/inspect.sh $ARGUMENTS
 ```
 
 ## Output sections

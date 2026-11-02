@@ -2,7 +2,7 @@
 name: miri-dsp
 description: Run `cargo +nightly miri test` against a Rust DSP crate to detect undefined behaviour the compiler missed — out-of-bounds access, use-after-free, uninitialised memory reads, invalid pointer arithmetic. Miri is the cheapest sound UB detector for Rust; this skill wraps it with the right isolation flags for audio DSP crates.
 allowed-tools: Bash
-argument-hint: "<crate-path>"
+argument-hint: "<crate-path> [--disable-isolation]"
 ---
 
 # Miri DSP
@@ -25,17 +25,19 @@ Miri is most valuable on `no_std` DSP crates — they tend to contain hand-writt
   rustup +nightly component add miri
   ```
 
-The script bootstraps both if missing.
+The script does **not** install anything: it checks for both and fails the `TOOLCHAIN` section with the install command if either is missing. Run the two commands above once, then re-run.
 
 ## Instructions
 
 The argument is in `$ARGUMENTS`. Pass it directly to the run script:
 
 ```bash
-bash "$(dirname "$0")/run.sh" $ARGUMENTS
+bash .claude/skills/miri-dsp/run.sh $ARGUMENTS
 ```
 
-The argument is the path to the crate directory.
+The first argument is the path to the crate directory.
+
+**Isolation.** By default Miri runs with isolation on: tests cannot read the real clock, OS randomness, environment or filesystem, which keeps runs deterministic. If the crate's tests legitimately need that (e.g. `std::time::Instant`, a `getrandom`-seeded PRNG), opt out with `--disable-isolation` or `MIRI_DSP_DISABLE_ISOLATION=1`. Any extra flags you put in `MIRIFLAGS` are kept. The script always adds `-Zmiri-strict-provenance`.
 
 ## Output sections
 
@@ -49,6 +51,9 @@ The argument is the path to the crate directory.
 ```bash
 # Run miri on a single DSP crate
 bash run.sh ./rust/audio-dsp
+
+# Tests that read Instant::now() or seed a PRNG from the OS
+bash run.sh ./rust/audio-dsp --disable-isolation
 
 # Run on every DSP crate in a workspace
 for crate in rust/dsp-*; do bash run.sh "$crate"; done

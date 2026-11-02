@@ -1,15 +1,26 @@
 #!/usr/bin/env bash
 # miri-dsp: run cargo +nightly miri test against a Rust DSP crate.
-# Usage: run.sh <crate-path>
+# Usage: run.sh <crate-path> [--disable-isolation]
+#   --disable-isolation (or MIRI_DSP_DISABLE_ISOLATION=1): let tests read the real
+#   clock / OS RNG / env / filesystem. Off by default — isolation keeps runs
+#   deterministic and catches tests that depend on host state.
 
 set -uo pipefail
 
 if [[ $# -lt 1 ]]; then
-  echo "Usage: run.sh <crate-path>"
+  echo "Usage: run.sh <crate-path> [--disable-isolation]"
   exit 1
 fi
 
 CRATE_DIR="$1"
+shift
+DISABLE_ISOLATION="${MIRI_DSP_DISABLE_ISOLATION:-0}"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --disable-isolation) DISABLE_ISOLATION=1; shift ;;
+    *) echo "ERROR  unknown arg: $1"; exit 1 ;;
+  esac
+done
 
 if [[ ! -f "$CRATE_DIR/Cargo.toml" ]]; then
   echo "ERROR  Cargo.toml not found at $CRATE_DIR/Cargo.toml"
@@ -40,9 +51,14 @@ echo "INFO   MIRI          running cargo +nightly miri test..."
 echo ""
 
 # MIRIFLAGS:
-#   -Zmiri-disable-isolation: allow time/RNG syscalls; fine for DSP tests that use Instant or PRNGs
-#   -Zmiri-strict-provenance: stricter aliasing rules — catches more UB
-export MIRIFLAGS="${MIRIFLAGS:-} -Zmiri-disable-isolation -Zmiri-strict-provenance"
+#   -Zmiri-strict-provenance: stricter pointer-provenance rules — catches more UB
+#   -Zmiri-disable-isolation: only when opted in (see usage) — allows host clock/RNG/fs access
+EXTRA_FLAGS="-Zmiri-strict-provenance"
+if [[ "$DISABLE_ISOLATION" == "1" ]]; then
+  EXTRA_FLAGS="$EXTRA_FLAGS -Zmiri-disable-isolation"
+  echo "INFO   MIRI          isolation disabled (host clock/RNG/fs visible to tests)"
+fi
+export MIRIFLAGS="${MIRIFLAGS:-} $EXTRA_FLAGS"
 
 if (cd "$CRATE_DIR" && cargo +nightly miri test --no-fail-fast) 2>&1 | sed 's/^/         /'; then
   echo ""

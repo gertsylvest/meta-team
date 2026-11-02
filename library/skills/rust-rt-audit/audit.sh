@@ -26,7 +26,7 @@ FAIL=0
 # ---------------------------------------------------------------------------
 # #![no_std]
 # ---------------------------------------------------------------------------
-if [[ -f "$LIB_RS" ]] && grep -qE '^\s*#!\s*\[\s*no_std\s*\]' "$LIB_RS"; then
+if [[ -f "$LIB_RS" ]] && grep -qE '^[[:space:]]*#![[:space:]]*\[[[:space:]]*no_std[[:space:]]*\]' "$LIB_RS"; then
   echo "PASS   NO_STD        #![no_std] declared in src/lib.rs"
 else
   echo "FAIL   NO_STD        #![no_std] not found in src/lib.rs"
@@ -37,8 +37,8 @@ echo ""
 # ---------------------------------------------------------------------------
 # No alloc dependency (no `extern crate alloc;` in source, no alloc in deps)
 # ---------------------------------------------------------------------------
-ALLOC_SRC=$(grep -RE '^\s*extern\s+crate\s+alloc\s*;' "$CRATE_DIR/src" 2>/dev/null || true)
-ALLOC_DEP=$(grep -E '^\s*alloc\s*=' "$CARGO_TOML" 2>/dev/null || true)
+ALLOC_SRC=$(grep -RE '^[[:space:]]*extern[[:space:]]+crate[[:space:]]+alloc[[:space:]]*;' "$CRATE_DIR/src" 2>/dev/null || true)
+ALLOC_DEP=$(grep -E '^[[:space:]]*alloc[[:space:]]*=' "$CARGO_TOML" 2>/dev/null || true)
 if [[ -z "$ALLOC_SRC" && -z "$ALLOC_DEP" ]]; then
   echo "PASS   NO_ALLOC_DEP  no extern crate alloc; no alloc dependency"
 else
@@ -52,7 +52,7 @@ echo ""
 # ---------------------------------------------------------------------------
 # panic = "abort" in release profile
 # ---------------------------------------------------------------------------
-if grep -E '^\s*panic\s*=\s*"abort"' "$CARGO_TOML" >/dev/null 2>&1; then
+if grep -E '^[[:space:]]*panic[[:space:]]*=[[:space:]]*"abort"' "$CARGO_TOML" >/dev/null 2>&1; then
   echo "PASS   PANIC_ABORT   panic = \"abort\" declared"
 else
   # Check workspace root too
@@ -65,7 +65,7 @@ else
       break
     fi
   done
-  if [[ -n "$WORKSPACE_TOML" ]] && grep -E '^\s*panic\s*=\s*"abort"' "$WORKSPACE_TOML" >/dev/null 2>&1; then
+  if [[ -n "$WORKSPACE_TOML" ]] && grep -E '^[[:space:]]*panic[[:space:]]*=[[:space:]]*"abort"' "$WORKSPACE_TOML" >/dev/null 2>&1; then
     echo "PASS   PANIC_ABORT   panic = \"abort\" inherited from workspace ($WORKSPACE_TOML)"
   else
     echo "FAIL   PANIC_ABORT   panic = \"abort\" not found in this crate or workspace root"
@@ -89,7 +89,11 @@ if command -v cargo-clippy &>/dev/null || cargo clippy --version &>/dev/null; th
       -W clippy::arithmetic_side_effects \
       2>&1 || true
   )
-  HITS=$(echo "$CLIPPY_OUT" | grep -E '^(warning|error):' | wc -l | tr -d ' ')
+  # Count diagnostics only — not cargo's per-crate summary lines
+  # ("warning: `foo` (lib) generated N warnings", "error: could not compile ...").
+  HITS=$(echo "$CLIPPY_OUT" | grep -E '^(warning|error)(\[[^]]*\])?:' \
+    | grep -vE 'generated [0-9]+ warnings?|could not compile|aborting due to' \
+    | wc -l | tr -d ' ')
   if [[ "$HITS" == "0" ]]; then
     echo "PASS   CLIPPY        no panic/alloc lint hits"
   else
@@ -117,22 +121,22 @@ fi
 echo ""
 
 # ---------------------------------------------------------------------------
-# LLVM-IR allocator scan (authoritative)
+# LLVM-IR allocator scan
 # ---------------------------------------------------------------------------
+# Emit this crate's IR to a fresh temp file, so stale .ll files from earlier
+# builds (or other crates) in target/ can never be scanned by mistake.
 echo "INFO   LLVM_IR_ALLOC building release LLVM-IR..."
 IR_DIR=$(mktemp -d)
-if cargo rustc --manifest-path "$CARGO_TOML" --release --quiet -- --emit=llvm-ir -o "$IR_DIR/out" 2>/dev/null; then
-  # cargo places the IR in target/release/deps/<crate>-<hash>.ll
-  TARGET_DIR=$(cargo metadata --manifest-path "$CARGO_TOML" --format-version 1 --no-deps 2>/dev/null | sed -n 's/.*"target_directory":"\([^"]*\)".*/\1/p')
-  IR_FILES=$(find "$TARGET_DIR/release/deps" -name '*.ll' 2>/dev/null || true)
-  if [[ -z "$IR_FILES" ]]; then
-    echo "SKIP   LLVM_IR_ALLOC no .ll files produced — check that the crate is a library"
+IR_FILE="$IR_DIR/crate.ll"
+if cargo rustc --manifest-path "$CARGO_TOML" --lib --release --quiet -- --emit=llvm-ir="$IR_FILE" 2>/dev/null; then
+  if [[ ! -s "$IR_FILE" ]]; then
+    echo "SKIP   LLVM_IR_ALLOC no IR produced — check that the crate has a library target"
   else
-    ALLOC_HITS=$(grep -lE '@__rust_(alloc|realloc|dealloc|alloc_zeroed)\b' $IR_FILES 2>/dev/null || true)
+    ALLOC_HITS=$(grep -nE '@__rust_(alloc|realloc|dealloc|alloc_zeroed)([^A-Za-z0-9_]|$)' "$IR_FILE" 2>/dev/null | head -n 20 || true)
     if [[ -z "$ALLOC_HITS" ]]; then
-      echo "PASS   LLVM_IR_ALLOC no allocator symbols in release IR"
+      echo "PASS   LLVM_IR_ALLOC no allocator symbols in this crate's release IR"
     else
-      echo "FAIL   LLVM_IR_ALLOC allocator symbols present in:"
+      echo "FAIL   LLVM_IR_ALLOC allocator symbols present in release IR (first 20 lines):"
       echo "$ALLOC_HITS" | sed 's/^/         /'
       FAIL=1
     fi

@@ -2,9 +2,7 @@
   "permissions": {
     "allow": [
       "Read(**)",
-      "Write(**)",
       "Edit(**)",
-      "Glob(**)",
       "Grep(**)",
       "WebSearch",
       "WebFetch(*)",
@@ -57,6 +55,7 @@
       "Bash(node:*)",
       "Bash(playwright:*)",
       "Bash(puppeteer:*)",
+      "mcp__playwright__*",
       "Bash(make:*)",
       "Bash(cmake:*)",
       "Bash(python3:*)",
@@ -86,6 +85,29 @@
       "Bash(ast-grep:*)",
       "Bash(sg:*)",
       "Agent(*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/.claude/skills/team-messaging/scripts/inbox-hook.sh\"; [ -f \"$f\" ] && bash \"$f\" session || true"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/.claude/skills/team-messaging/scripts/inbox-hook.sh\"; [ -f \"$f\" ] && bash \"$f\" prompt || true"
+          }
+        ]
+      }
     ]
   }
 }

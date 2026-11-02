@@ -34,7 +34,7 @@ if ! command -v wasm-pack &>/dev/null; then
   PREREQ_FAIL=1
 fi
 if ! command -v wasm-opt &>/dev/null; then
-  echo "FAIL   PREREQ        wasm-opt not found — install: brew install binaryen"
+  echo "FAIL   PREREQ        wasm-opt not found — install: brew install binaryen (macOS) | apt install binaryen / dnf install binaryen (Linux) | https://github.com/WebAssembly/binaryen/releases"
   PREREQ_FAIL=1
 fi
 if ! rustup target list --installed 2>/dev/null | grep -q wasm32-unknown-unknown; then
@@ -51,7 +51,11 @@ echo ""
 # Build
 # ---------------------------------------------------------------------------
 echo "INFO   BUILD         wasm-pack build --target web $WASM_PACK_MODE"
+# NB: setting RUSTFLAGS (env) makes cargo ignore every `rustflags` /
+# `build.rustflags` / `target.<triple>.rustflags` entry in .cargo/config.toml.
+# Anything the project keeps there must be passed in RUSTFLAGS instead.
 export RUSTFLAGS="${RUSTFLAGS:-} -C target-feature=+simd128"
+echo "INFO   BUILD         RUSTFLAGS=\"$RUSTFLAGS\" (overrides .cargo/config.toml rustflags)"
 if (cd "$CRATE_DIR" && wasm-pack build --target web $WASM_PACK_MODE) 2>&1 | sed 's/^/         /'; then
   echo "PASS   BUILD         wasm-pack succeeded"
 else
@@ -70,6 +74,9 @@ fi
 
 # ---------------------------------------------------------------------------
 # wasm-opt post-pass (release only)
+# wasm-pack already runs wasm-opt on release builds (its default is -O, tunable
+# via [package.metadata.wasm-pack.profile.release] wasm-opt = [...]). This is a
+# second, explicit -O3 + SIMD pass so the result does not depend on that config.
 # ---------------------------------------------------------------------------
 if [[ "$MODE" == "release" ]]; then
   SIZE_BEFORE=$(wc -c < "$WASM_FILE" | tr -d ' ')

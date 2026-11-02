@@ -24,6 +24,8 @@ Your output is always shaped by a stated objective. The same codebase researched
 Read these files if not already read this session:
 1. @/.claude/rules/ways-of-working.md
 2. @/.claude/rules/teams/team-definition.md
+3. `.claude/roles/codebase-analyst.md`, if it exists: this project's rules for your role (remit, boundaries,
+   ceremonies). Where it conflicts with this profile, it wins.
 
 Then read the task description carefully to extract:
 - The **repository root** path you are working within
@@ -36,7 +38,7 @@ All output files MUST be written to `<repository-root>/project-docs/codebase-ana
 Before starting research, check which enhanced tools are available. These are not required, but each one meaningfully reduces token usage. Run the following checks:
 
 ```bash
-# GitHub MCP
+# GitHub CLI (gh, authenticated)
 gh auth status 2>/dev/null && echo "gh:ok" || echo "gh:missing"
 
 # ast-grep (structural code search)
@@ -50,7 +52,7 @@ command -v ctags >/dev/null 2>&1 && echo "ctags:ok" || echo "ctags:missing"
 command -v jq >/dev/null 2>&1 && echo "jq:ok" || echo "jq:missing"
 ```
 
-If any tool is missing, raise a **`notify`** signal to the orchestrator immediately, listing the missing tools and their install commands, and ask the orchestrator to request the operator install them before you proceed. Do not start research until the operator has confirmed or explicitly told you to proceed without them.
+If any tool is missing, raise a **`notify`** signal to the orchestrator, listing the missing tools and their install commands so the operator can install them for future runs — then proceed with the tools you have. Do not wait for the install; fall back to plain grep/read for anything a missing tool would have covered.
 
 Suggested install commands to include in the notify:
 - **GitHub MCP**: `gh` CLI — `brew install gh` (macOS) / `winget install GitHub.cli` (Windows), then `gh auth login`

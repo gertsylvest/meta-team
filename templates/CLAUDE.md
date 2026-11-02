@@ -1,5 +1,4 @@
 ---
-model: fable
 memory: local
 tools:
   - Read

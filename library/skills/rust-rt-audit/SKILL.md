@@ -15,7 +15,7 @@ Verify that a Rust DSP crate respects the real-time-safety rules:
 4. No banned heap/blocking constructs (`Vec::`, `Box::`, `Mutex`, `format!`, `println!`, etc.) appear in the source.
 5. The compiled LLVM-IR contains no calls to `__rust_alloc` / `__rust_realloc` / `__rust_dealloc`.
 
-The first four are cheap and run in seconds. The fifth is the authoritative check — a clean grep can lie, but an IR with no allocator symbols cannot.
+The first four are cheap and run in seconds. The fifth is the strongest check, but it is **not a proof**: it scans only the IR of this crate's library, built fresh into a temp file. Generic functions are not monomorphised there — they are instantiated in the *caller's* crate — so an allocation inside a generic (or an `#[inline]` function only expanded downstream) can be absent from this IR and still reach the hot path. For full coverage, also run the scan on the final consumer (the binary, cdylib or wasm module), e.g. by inspecting its symbols for `__rust_alloc`.
 
 ## Requirements
 
@@ -31,7 +31,7 @@ Optional but recommended:
 The argument is in `$ARGUMENTS`. Pass it directly to the audit script:
 
 ```bash
-bash "$(dirname "$0")/audit.sh" $ARGUMENTS
+bash .claude/skills/rust-rt-audit/audit.sh $ARGUMENTS
 ```
 
 The argument is the path to the crate directory (the one containing `Cargo.toml`).
@@ -45,7 +45,7 @@ The argument is the path to the crate directory (the one containing `Cargo.toml`
 | `PANIC_ABORT` | Whether `panic = "abort"` is set in the release profile |
 | `CLIPPY` | Lint results from a curated set of panic/allocation-detecting lints |
 | `HOT_PATH_GREP` | Grep hits for banned constructs in `src/**.rs` |
-| `LLVM_IR_ALLOC` | Whether `__rust_alloc*` symbols appear in the release LLVM-IR |
+| `LLVM_IR_ALLOC` | Whether `__rust_alloc*` symbols appear in this crate's freshly emitted release LLVM-IR (generics excluded — see above) |
 
 ## Typical usage
 
@@ -63,4 +63,6 @@ for crate in rust/dsp-*; do bash audit.sh "$crate"; done
 - **`NO_ALLOC_DEP` failing** means a transitive dependency pulled in `alloc`. Use `cargo tree -e features` to find the culprit and either gate it behind a feature flag or replace it.
 - **`PANIC_ABORT` failing** is a one-line `Cargo.toml` fix.
 - **`CLIPPY` or `HOT_PATH_GREP` hits** require code changes — see the agent profile's Real-Time-Safe Rust section for the rationale and the safe replacements.
+- **Hits from test code** — `HOT_PATH_GREP` scans every file under `src/` textually, and clippy lints the lib target, so `Vec::`, `println!` or `unwrap()` inside `#[cfg(test)] mod tests` blocks will be reported. Move tests to `tests/` (integration tests, not scanned), or treat hits inside test modules as false positives.
+- **`CLIPPY` hit count** counts individual diagnostics; cargo's "generated N warnings" summary line is excluded.
 - **`LLVM_IR_ALLOC` failing despite a clean source grep** usually means a third-party crate is allocating. `cargo tree` + the IR's call site (look at the function name preceding `call __rust_alloc`) identify the source.

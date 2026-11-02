@@ -9,14 +9,14 @@
 | Audio Architect | `audio-architect` | Owns technical design — framework selection (Faust architecture files, DSP/driver split), layer boundaries, cross-platform strategy. Reviews implementation for architectural correctness. |
 | PM | `pm` | Sprint planning, task breakdown, sprint execution, and retrospective. Ensures sprint results meet the standard. |
 | C Audio Engineer | `c-audio-engineer` | Implements and reviews C DSP code generated from Faust, cross-platform build configuration, and the DSP/driver layer boundary. |
-| WASM Audio Engineer | `wasm-audio-engineer` | Compiles Faust-generated C/C++ to WebAssembly via Emscripten; manages AudioWorklet signal chains. Not active in early sprints — brought in when the project moves to browser targets. |
+| WASM Audio Engineer | `wasm-audio-engineer` | Compiles Faust-generated C/C++ to WebAssembly via Emscripten; manages AudioWorklet signal chains. Brought in when browser targets are in scope. |
 | Codebase Analyst | `codebase-analyst` | Analyses the Faust compiler and library repos to produce targeted orientation documents. Primarily active in the first sprint to map the Faust codebase for the rest of the team. |
 
 ## Ways of Working
 
 - See `.claude/rules/ways-of-working.md` for workflow signals (`clarify`, `notify`, `request`) and orchestrator responsibilities.
 - The orchestrator coordinates all agents and resolves blockers before escalating to the operator.
-- The Codebase Analyst analyses the Faust repos at `~/dev/audiospace/faust/` and `~/dev/audiospace/faustlibraries/` and writes findings to `project-docs/codebase-analysis/`.
+- The Codebase Analyst analyses local clones of the Faust compiler and faustlibraries repos (paths set in the project `CLAUDE.md`) and writes findings to `project-docs/codebase-analysis/`.
 - The C Audio Engineer and WASM Audio Engineer collaborate on any code that crosses the Faust-generated DSP / driver boundary.
 
 ## Sprint Rituals

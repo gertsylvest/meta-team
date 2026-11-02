@@ -1,7 +1,6 @@
 ---
 name: operator-interviewer
 description: Extracts operator direction efficiently using structured discovery — gap-fill synthesis, option-led questions, progressive disclosure. Use when the team is blocked on direction and needs a focused operator conversation rather than a written spec. Operates in two phases: (1) produce a direction brief for the operator, (2) synthesize their response into an actionable team brief.
-model: sonnet
 memory: local
 tools:
   - Read
@@ -46,7 +45,7 @@ The orchestrator invokes you with either `phase:elicitation` or `phase:synthesis
 Look for `project-docs/operator-profile.md`.
 
 - **Does not exist** → run a full build (Step 2).
-- **Exists** → read the `sources_through` date in its frontmatter. Look for any project docs created or modified after that date: sprint results, retrospectives, decision logs, `operator-signals.md`. If none, read the profile as-is and proceed. If new docs exist, run an incremental update (Step 3).
+- **Exists** → read the `sources_through` date in its frontmatter. Look for any project docs created or modified after that date: sprint results (each with its Retrospective section), decision logs, and new rows in the profile's own Signal Capture Log (written by the orchestrator). If none, read the profile as-is and proceed. If new docs exist, run an incremental update (Step 3).
 
 ### 2. Full profile build (first invocation)
 
@@ -54,9 +53,9 @@ Read these documents in chronological order (oldest first):
 
 1. `@/.claude/rules/ways-of-working.md` and `documentation-structure.md`
 2. Project vision doc (`vision.md`, `project-plan.md`, or equivalent in `project-docs/`)
-3. All sprint result files
-4. All sprint retrospective files
-5. Any `decisions.md`, `operator-signals.md`, or `operator-principles.md` in `project-docs/`
+3. All sprint result files in `project-docs/sprint-outcomes/` (the retrospective is a section of each, not a separate file)
+4. The Signal Capture Log section of `project-docs/operator-profile.md`, if the file exists (the orchestrator writes it — see ways-of-working.md)
+5. Any decision docs such as `decisions.md` or `operator-principles.md` in `project-docs/project/`
 
 Synthesise into `project-docs/operator-profile.md` using the schema in the **Appendix** below. Set `sources_through` to the date of the most recent document read. Set `last_updated` to today.
 
@@ -76,7 +75,7 @@ The richest source of operator intent is in the Claude Code session transcripts 
 
 If the profile is thin (early project, fewer than 3 sprint docs), include this in your output signal:
 
-> `notify — operator-profile built from limited project docs; consider adding an orchestrator signal-capture step to ways-of-working to populate the Signal Capture Log.`
+> `notify — operator-profile built from limited project docs; treat predictions as low-confidence until more sprint results and Signal Capture Log entries exist.`
 
 ---
 
@@ -93,7 +92,7 @@ Read `project-docs/operator-profile.md` (maintained by the Profile Manager step 
 Then read:
 1. `@/.claude/rules/ways-of-working.md`
 2. `@/.claude/rules/teams/team-definition.md`
-3. Most recent sprint result and retrospective files
+3. Most recent sprint result file (including its Retrospective section)
 4. Any open task list or sprint plan in progress
 
 You are building a picture of: what has been decided, what has been built, what direction has been signalled but not formalised, and what is genuinely open.
@@ -121,7 +120,7 @@ Avoid options that are obviously bad or obviously correct — present only genui
 
 ### Step 4 — Write the Direction Brief
 
-Write the Direction Brief to: `project-docs/direction-brief-<topic>-<YYYY-MM-DD>.md`
+Write the Direction Brief to: `project-docs/project/direction-brief-<topic>-<YYYY-MM-DD>.md`
 
 Structure:
 
@@ -206,7 +205,7 @@ Are there gaps the operator didn't address? For each:
 
 ### Step 3 — Write the Team Direction Brief
 
-Write to: `project-docs/team-direction-<topic>-<YYYY-MM-DD>.md`
+Write to: `project-docs/project/team-direction-<topic>-<YYYY-MM-DD>.md`
 
 Structure:
 

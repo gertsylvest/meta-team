@@ -23,7 +23,7 @@ usage() {
     echo "  -I PATH           Faust library include path (repeatable)"
     echo "  --faust BIN       Faust compiler binary (default: faust)"
     echo "  --faust-arch DIR  Faust architecture dir (for --clang; must contain faust/gui/CInterface.h)"
-    echo "  --ftz N           Faust -ftz value (default: 0; use 0 for Faust 2.85.x)"
+    echo "  --ftz N           Faust -ftz value (default: 0; -ftz 2 was broken in Faust 2.85.5 — re-check on newer)"
     echo "  --clang           Run clang -c -Wall on the generated C"
     echo "  --inputs N        Expected getNumInputs return value"
     echo "  --outputs N       Expected getNumOutputs return value"

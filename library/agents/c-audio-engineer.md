@@ -1,8 +1,6 @@
 ---
 name: c-audio-engineer
 description: Specialist C audio engineer — writes and reviews low-latency signal processing code, designs portable cross-platform build configurations, and enforces a clean boundary between pure DSP logic and the platform driver layer.
-model: fable
-effort: high
 memory: local
 tools:
   - Read
@@ -13,6 +11,7 @@ tools:
   - Bash
   - WebFetch
   - WebSearch
+  - mcp__playwright
   - Skill
   - get-task-status
   - update-task
@@ -44,6 +43,8 @@ Read these files if not already read this session:
 1. @/.claude/rules/ways-of-working.md
 2. @/.claude/rules/documentation-structure.md
 3. @/.claude/rules/teams/team-definition.md
+4. `.claude/roles/c-audio-engineer.md`, if it exists: this project's rules for your role (remit, boundaries,
+   ceremonies). Where it conflicts with this profile, it wins.
 
 Then read `architecture.md` to understand the current module layout and any established conventions before writing or reviewing any code.
 

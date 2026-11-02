@@ -95,6 +95,30 @@ if [[ "${#missing[@]}" -gt 0 ]]; then
     echo
 fi
 
+# Leak check: refuse to publish while a manifested file matches a pattern in the
+# private .publish-denylist (internal names, machine paths). Skipped if the file is absent.
+DENYLIST="${PRIVATE_ROOT}/.publish-denylist"
+if [[ -f "${DENYLIST}" ]]; then
+    patterns="$(mktemp)"
+    grep -v '^[[:space:]]*#' "${DENYLIST}" | grep -v '^[[:space:]]*$' > "${patterns}" || true
+    if [[ -s "${patterns}" ]]; then
+        hits="$(cd "${PUBLIC_ROOT}" && grep -rnIiE --exclude-dir=.git -f "${patterns}" . || true)"
+        if [[ -n "${hits}" ]]; then
+            echo "LEAK CHECK: manifested files match .publish-denylist:"
+            echo "${hits}" | sed 's/^/  /'
+            echo
+            if [[ "${MODE}" != "diff" ]]; then
+                rm -f "${patterns}"
+                git -C "${PUBLIC_ROOT}" reset --hard origin/main --quiet
+                git -C "${PUBLIC_ROOT}" clean -fdq
+                echo "ERROR: not publishing. Fix the files above, or adjust .publish-denylist." >&2
+                exit 1
+            fi
+        fi
+    fi
+    rm -f "${patterns}"
+fi
+
 # Stage and check changes in the public worktree.
 cd "${PUBLIC_ROOT}"
 git add -A

@@ -30,5 +30,7 @@
 
 | Skill | Used by | Purpose |
 |-------|---------|---------|
-| `audio-fft-sanity` | C Audio Engineer, WASM Audio Engineer | FFT-based sanity checks on audio output — fundamental frequency, THD, SNR, clipping, silence |
-| `wasm-module-inspect` | WASM Audio Engineer | Validates a compiled `.wasm` binary — exports, SIMD, threading, binary size |
+| `audio-fft-sanity` | Audio Architect, C Audio Engineer, WASM Audio Engineer | FFT-based sanity checks on audio output — fundamental frequency, THD, SNR, clipping, silence |
+| `wasm-module-inspect` | Audio Architect, C Audio Engineer, WASM Audio Engineer | Validates a compiled `.wasm` binary — exports, SIMD, threading, binary size |
+| `faust-build` | Audio Architect, C Audio Engineer, WASM Audio Engineer | Compiles a Faust `.dsp` source to C, verifies the API surface, and audits parameter smoothing |
+| `faust-header-gen` | Audio Architect, C Audio Engineer, WASM Audio Engineer | Generates a matching `extern "C"` header from Faust-generated C, preventing header/implementation drift |

@@ -1,0 +1,130 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Edit(**)",
+      "WebSearch",
+      "WebFetch",
+      "Bash(cd:*)",
+      "Bash(ls:*)",
+      "Bash(cp:*)",
+      "Bash(mkdir:*)",
+      "Bash(rm:*)",
+      "Bash(mv:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(sort:*)",
+      "Bash(grep:*)",
+      "Bash(jq:*)",
+      "Bash(awk:*)",
+      "Bash(sed:*)",
+      "Bash(echo:*)",
+      "Bash(printf:*)",
+      "Bash(timeout:*)",
+      "Bash(tee:*)",
+      "Bash(xargs:*)",
+      "Bash(wc:*)",
+      "Bash(tr:*)",
+      "Bash(cut:*)",
+      "Bash(uniq:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(command:*)",
+      "Bash(which:*)",
+      "Bash(file:*)",
+      "Bash(systemctl status:*)",
+      "Bash(systemctl is-active:*)",
+      "Bash(systemctl show:*)",
+      "Bash(systemctl cat:*)",
+      "Bash(systemctl list-timers:*)",
+      "Bash(journalctl:*)",
+      "Bash(df:*)",
+      "Bash(du:*)",
+      "Bash(diff:*)",
+      "Bash(stat:*)",
+      "Bash(findmnt:*)",
+      "Bash(uptime:*)",
+      "Bash(free:*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(bash -n:*)",
+      "Bash(bash .claude/skills/*)",
+      "Bash(bash documentation/runbooks/assets/*)",
+      "Bash(make:*)",
+      "Bash(just:*)",
+      "Bash(curl:*)",
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(rsync:*)",
+      "Bash(docker:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(python3:*)",
+      "Bash(claude:*)",
+      "Bash(taskmd:*)",
+      "Bash(playwright:*)",
+      "mcp__playwright__*",
+      "Skill(log-pattern-scan)",
+      "Agent(*)"
+    ],
+    "deny": [
+      "Bash(*rm -rf /)",
+      "Bash(*rm -rf / *)",
+      "Bash(*rm -rf ~)",
+      "Bash(*rm -rf ~/)",
+      "Bash(*git push* --force*)",
+      "Bash(*git push* -f*)",
+      "Bash(*git push* +*)",
+      "Bash(*git push* --mirror*)",
+      "Bash(*compose*down -v*)",
+      "Bash(*compose*down * -v*)",
+      "Bash(*compose*down --volumes*)",
+      "Bash(*compose*down * --volumes*)",
+      "Bash(*docker volume rm*)",
+      "Bash(*docker volume prune*)",
+      "Bash(*docker system prune*)",
+      "Bash(*curl * | bash*)",
+      "Bash(*curl * | sh)",
+      "Bash(*curl * | sh *)",
+      "Bash(*curl * | sudo *)",
+      "Bash(*curl * | python*)",
+      "Bash(*curl * | node*)",
+      "Bash(*curl * | perl*)",
+      "Bash(*wget * | bash*)",
+      "Bash(*wget * | sh)",
+      "Bash(*wget * | sh *)",
+      "Bash(*wget * | sudo *)",
+      "Bash(*wget * | python*)",
+      "Bash(*wget * | node*)",
+      "Bash(*wget * | perl*)",
+      "Bash(*--dangerously-skip-permissions*)",
+      "Read(~/.ssh/id_*)",
+      "Read(~/.claude/.credentials.json)",
+      "Read(~/.secrets/**)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/.claude/skills/team-messaging/scripts/inbox-hook.sh\"; [ -f \"$f\" ] && bash \"$f\" session || true"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/.claude/skills/team-messaging/scripts/inbox-hook.sh\"; [ -f \"$f\" ] && bash \"$f\" prompt || true"
+          }
+        ]
+      }
+    ]
+  }
+}

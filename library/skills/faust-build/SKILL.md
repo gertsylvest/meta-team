@@ -12,7 +12,7 @@ Compile a Faust DSP source file to C and verify the result is structurally corre
 ## Requirements
 
 - **Faust compiler** on `PATH` (or specify binary with `--faust`). Tested against Faust 2.85.x.
-  - Known issue: `-ftz 2` generates broken C in Faust 2.85.5. This script defaults to `-ftz 0` (see `--ftz` option).
+  - Known issue (observed April 2026, Faust 2.85.5): `-ftz 2` generated broken C. This script defaults to `-ftz 0` (see `--ftz` option). **Re-check on newer Faust** — if `-ftz 2` compiles cleanly there, it may be a better default.
 - **clang** (optional, only needed for `--clang` step)
 - **Faust architecture headers** (optional, only needed for `--clang`): the directory containing `faust/gui/CInterface.h`. Pass via `--faust-arch`.
 
@@ -21,7 +21,7 @@ Compile a Faust DSP source file to C and verify the result is structurally corre
 Arguments are in `$ARGUMENTS`. Pass them directly to the build script:
 
 ```bash
-bash "$(dirname "$0")/build.sh" $ARGUMENTS
+bash .claude/skills/faust-build/build.sh $ARGUMENTS
 ```
 
 ## Steps performed
@@ -41,7 +41,7 @@ bash "$(dirname "$0")/build.sh" $ARGUMENTS
 | `-I PATH` | — | Include path for Faust library resolution (repeatable). Typically needs `dsp/modules` and the `faustlibraries` path. |
 | `--faust BIN` | `faust` | Faust compiler binary path. |
 | `--faust-arch DIR` | — | Directory containing `faust/gui/CInterface.h`. Required for `--clang`. |
-| `--ftz N` | `0` | Faust denormal flushing mode. Use `0` for Faust 2.85.x (the default); `-ftz 2` is broken in that version. |
+| `--ftz N` | `0` | Faust denormal flushing mode. Use `0` for Faust 2.85.x (the default); `-ftz 2` was broken in 2.85.5 (April 2026) — re-check on newer Faust. |
 | `--clang` | off | Run `clang -c -Wall` on the generated C as a final verification step. |
 | `--inputs N` | — | Expected `getNumInputs` return value. Fails if the generated code disagrees. |
 | `--outputs N` | — | Expected `getNumOutputs` return value. Fails if the generated code disagrees. |
@@ -52,6 +52,8 @@ bash "$(dirname "$0")/build.sh" $ARGUMENTS
 - `1` — Faust compilation failed, or one or more API surface checks failed, or clang failed
 
 ## Examples
+
+`~/faust/faustlibraries` and `~/faust/architecture` below are **placeholders** — substitute wherever your Faust install keeps its libraries and architecture files (e.g. `$(faust --libdir)`/`$(faust --includedir)`, or a checkout of the `faustlibraries` repo).
 
 ```bash
 # Minimal: compile and verify API surface

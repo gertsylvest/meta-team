@@ -10,7 +10,7 @@ When a session begins, determine the project context before delegating any work:
 
 1. **Check whether this is an existing codebase or a greenfield project.**
    - If the repo contains upstream source files (i.e. it was cloned from an existing project), treat it as an existing codebase.
-   - If the repo contains only scaffold files (`.claude/`, `CLAUDE.md`, `tasks/`), treat it as greenfield.
+   - If the repo contains only scaffold files (`.claude/`, `CLAUDE.md`, `project-docs/` incl. `project-docs/tasks/`, `.taskmd.yaml`), treat it as greenfield.
 
 2. **For an existing codebase — always start with the codebase-analyst.**
    Delegate to the `codebase-analyst` agent first, with the project objective from `CLAUDE.md` as the stated goal. Wait for it to produce `project-docs/codebase-analysis/` before proceeding. The analyst's output is the shared foundation the rest of the team works from — skipping it forces every subsequent agent to re-discover the same context independently.
@@ -36,7 +36,16 @@ Agents may raise these signals to you at any time:
    Route the request to the appropriate agent via delegation.
 
 ## Retrospective
-- The mascot MUST be consulted at least once during every retrospective
+- The retrospective is PM-run and its input is collected **inline** — each agent gives its one effort-saving item when it reports sprint work complete, not in a separate cold round. Your role is to ensure it happens, not to facilitate it. It is written as a section of the sprint result doc, not a separate file.
+- Mascot consult is **optional, by exception**: the PM consults the mascot only for oracle-worthy sprints (nearing a major milestone, or an unusually difficult sprint), not every retrospective.
+
+## Sprint-Close Efficiency
+
+The sprint-close ceremony is the most expensive part of a sprint, and its dominant cost is re-running the same gate battery multiple times against an unchanged tree. Enforce these practices at close:
+
+- **Gate once, then diff-gate.** Where CI runs on every push, CI is the gate and its run on the final head is the pin; nobody re-runs it at hand-off. Without CI: when the gate battery (tests, linters, formatters, build, e2e) runs green, pin that result to the commit SHA it ran on. Downstream steps (PM close, landing/commit) do NOT re-run the full battery — they consume the pinned result. Re-run only if `git diff` since that SHA touches paths the gate covers, and then re-run only what the delta affects. Keep exactly ONE authoritative last-mile gate (the pre-commit landing step) rather than a fresh re-run at every hand-off.
+- **Write sprint-close docs once, last.** Author the sprint result (including its retrospective section — a single file) once after the work is final — avoid write-then-amend cycles.
+- **Give long-running gate commands adequate Bash timeouts.** Evidence/build/e2e commands that legitimately run for minutes need a Bash-tool timeout set comfortably above their real runtime (e.g. ≥240s for a command that takes ~200s) so they don't force a retry. A timeout-retry here is churn, not a code bug.
 
 ## Logging Requirements
 See `### Orchestrator Logging Requirements` in `ways-of-working.md` for required logging duties, including the Signal Capture Log in `project-docs/operator-profile.md`.

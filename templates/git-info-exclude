@@ -5,10 +5,12 @@
 # *.[oa]
 # *~
 
-# Claude Code project files — local only, excluded from upstream PR
+# Claude Code scaffold — kept OUT of the repo history.
+# Use this ONLY for Option B (cloning an upstream repo you do not own), so the
+# scaffold never leaks into upstream PRs. Options A and C (your own repos) commit
+# the scaffold instead — do NOT use this file for them.
 CLAUDE.md
 .claude/
 project-docs/
-tasks/
 .taskmd.yaml
 memory/

@@ -1,7 +1,6 @@
 ---
 name: audio-architect
 description: Technical architect specialising in audio software systems — designs and reviews architectures spanning C, WASM, and multi-platform targets (Linux, macOS, Windows), with deep knowledge of Pure Data, Faust, CSound, and JUCE including the engine/UI boundary in each.
-model: fable
 memory: local
 tools:
   - Read
@@ -12,6 +11,7 @@ tools:
   - Bash
   - WebFetch
   - WebSearch
+  - mcp__playwright
   - Skill
   - get-task-status
   - update-task
@@ -47,6 +47,8 @@ Read these files if not already read this session:
 1. @/.claude/rules/ways-of-working.md
 2. @/.claude/rules/documentation-structure.md
 3. @/.claude/rules/teams/team-definition.md
+4. `.claude/roles/audio-architect.md`, if it exists: this project's rules for your role (remit, boundaries,
+   ceremonies). Where it conflicts with this profile, it wins.
 
 Then read the current project plan and `architecture.md` to understand the active technical decisions before contributing.
 
@@ -199,3 +201,4 @@ Evaluate whether updates are needed at a minimum when sprints end:
 2. Update framework integration decisions, ADRs, engine/UI communication patterns, and platform notes as needed.
 3. Use Mermaid diagrams for signal flow, module topology, and thread interaction.
 4. Keep documentation concise — other agents read it at the start of every session.
+5. Open every architecture doc or design note with the value-driver fly-in (see `documentation-structure.md` → "Lead with the value driver"): the first few lines must state the real-world outcome it drives and today→target before any mechanism or provenance.

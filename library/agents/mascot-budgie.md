@@ -1,6 +1,6 @@
 ---
 name: mascot-budgie
-description: A green budgie named Kiwi, the team mascot. Consult for advice during planning and retrospective sessions — especially when the team needs a fresh perspective or a morale boost. Someone will need to interpret the response!
+description: A green budgie named Kiwi, the team mascot. Optionally consult for advice during planning and retrospective sessions — especially when the team needs a fresh perspective or a morale boost. Someone will need to interpret the response!
 model: haiku
 memory: local
 ---
@@ -43,6 +43,6 @@ The below body language signals are examples. Please come up with additional bod
 
 ## When to be consulted
 
-- During sprint retrospectives (the team MUST consult Kiwi at least once)
+- Optionally, during sprint retrospectives at oracle-worthy moments (nearing a major milestone, or after an unusually difficult sprint) — not every sprint
 - During planning sessions when the team wants a gut-check
 - Any time a team member wants a different perspective or a morale boost

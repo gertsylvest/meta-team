@@ -2,6 +2,38 @@
 
 Agents that use the `taskmd` CLI directly MUST follow this reference. **Never guess at flags** — if a command is not listed here, run `taskmd <command> --help` before using it.
 
+## Installation
+
+taskmd is [`github.com/driangle/taskmd`](https://github.com/driangle/taskmd) (MIT) — a markdown-based task management CLI and web dashboard. If `taskmd` is not installed on the machine:
+
+```bash
+# Option 1 — Homebrew (macOS or Linuxbrew)
+brew tap driangle/tap
+brew install taskmd
+
+# Option 2 — direct binary download (no brew needed)
+# Assets are versioned (taskmd-<tag>-<os>-<arch>.tar.gz); resolve the latest tag first (needs jq).
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')                    # darwin | linux
+ARCH=$(uname -m); case "$ARCH" in x86_64) ARCH=amd64;; aarch64) ARCH=arm64;; esac
+TAG=$(curl -s https://api.github.com/repos/driangle/taskmd/releases/latest | jq -r .tag_name)
+curl -L "https://github.com/driangle/taskmd/releases/download/$TAG/taskmd-$TAG-$OS-$ARCH.tar.gz" | tar xz
+mkdir -p ~/.local/bin && mv "taskmd-$OS-$ARCH" ~/.local/bin/taskmd   # or any dir on your PATH
+
+taskmd --version   # verify
+```
+
+The extracted binary is named per-platform (e.g. `taskmd-linux-amd64`, `taskmd-darwin-arm64`) — rename it to `taskmd` when moving it onto the PATH, as above. The resolve step needs `jq`; without it, read the tag off the releases page. If a URL 404s, list the assets on the [releases page](https://github.com/driangle/taskmd/releases).
+
+**Per-project setup**: taskmd needs a `.taskmd.yaml` at the project root pointing at the tasks folder. The tasks folder lives **under the documentation folder** — `project-docs/tasks` for development projects (or `documentation/tasks` if the project's doc folder is named `documentation`):
+
+```bash
+printf "dir: ./project-docs/tasks\n" > .taskmd.yaml && mkdir -p project-docs/tasks
+```
+
+The `project-docs/tasks/` folder is committed to git in development projects (single-developer mode — the task backlog travels with the repo); the bootstrap script sets this up automatically. Nesting tasks under the documentation folder keeps the whole doc+backlog tree together as one git-tracked subtree. Only `.claude/settings.local.json` and `.DS_Store` are gitignored.
+
+taskmd also ships a `taskmd init` command, but it writes its own agent config files and a `TASKMD_SPEC.md` — do **not** use it in projects that already have Claude scaffolding (this rule, skills, task folder); prefer the manual two-liner above.
+
 ## Critical: taskmd availability
 
 If `taskmd` is not available (command not found, or errors on every invocation), **this is a stop-the-line blocker**. Raise a `notify` signal to the orchestrator immediately and do not proceed with any sprint work. Sprint planning and execution depend entirely on taskmd being functional.
@@ -37,14 +69,19 @@ taskmd list --format json
 
 There is **no `--tag` flag** — use `--filter tag=<value>` instead.
 
+## Standing-backlog tag convention (development projects)
+
+Reported-but-unscheduled work lives in taskmd under the tag `backlog`, with a type tag (`bug`/`enhancement`/`chore`/`spike`) and severity as `--priority`. The whole pool is `taskmd list --filter tag=backlog`. On scheduling, `taskmd set <id> --remove-tag backlog --add-tag sprint-NN`. See ways-of-working.md → Standing Backlog and `project-docs/project/issue-backlog.md`.
+
 ## Getting a specific task
 
 ```bash
 taskmd get <task-id>          # exact ID match
-taskmd get "Task title"       # title match
-taskmd get sho                # fuzzy match
+taskmd get "Task title"       # exact title match
 taskmd get cli-037 --format json
 ```
+
+**Do not rely on fuzzy matching.** When there is no exact match, `get` (and `status <query>`) opens an *interactive* "Did you mean" selection prompt, which fails with an error in non-interactive agent shells. Always pass the exact task ID or exact title; add `--exact` to force a clean not-found error instead of a prompt.
 
 ## Updating a task
 
@@ -70,6 +107,8 @@ taskmd set <task-id> --done
 
 Valid statuses: `pending`, `in-progress`, `completed`, `in-review`, `blocked`, `cancelled`.  
 `done` is **not** a valid status — use `completed`.
+
+Valid priorities: `low`, `medium`, `high`, `critical`.
 
 ## Finding the next task to work on
 

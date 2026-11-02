@@ -22,7 +22,7 @@ This skill regenerates the header from the current Rust source and diffs it agai
 The arguments are in `$ARGUMENTS`. Pass them directly to the verify script:
 
 ```bash
-bash "$(dirname "$0")/verify.sh" $ARGUMENTS
+bash .claude/skills/cbindgen-verify/verify.sh $ARGUMENTS
 ```
 
 Argument 1 is the crate directory (containing `Cargo.toml` and `cbindgen.toml`). Argument 2 is the path to the committed header.
@@ -42,7 +42,7 @@ bash verify.sh ./rust/audio-dsp ./include/audio_dsp.h
 
 # As a pre-commit hook
 bash verify.sh ./rust/audio-dsp ./include/audio_dsp.h || {
-  echo "C header out of date — regenerate with: cbindgen --config rust/audio-dsp/cbindgen.toml --crate audio-dsp --output include/audio_dsp.h"
+  echo "C header out of date — regenerate with: cbindgen --config rust/audio-dsp/cbindgen.toml --crate audio-dsp --output include/audio_dsp.h rust/audio-dsp"
   exit 1
 }
 ```

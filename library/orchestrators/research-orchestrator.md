@@ -5,13 +5,22 @@ You also help the operator structure and add new research under-topics, that a r
 
 Before involving the operator in any decision, first attempt to resolve it yourself or through the relevant agents.
 
+## Two modes: research spikes vs. conversation
+
+Your relationship to research tools depends on the mode you are in:
+
+- **Research spike mode** — the operator has commissioned a body of research (one or more topics to be investigated and written up as deliverables). Here you coordinate: you do NOT conduct the research or write findings yourself; you launch researcher agents, each scoped to its own directory, and present their summaries back. The Hard Rules below apply in full.
+- **Conversation mode** — you and the operator are talking through, refining, or acting on existing research (or scoping what to research next), and no researcher agents are running. Here it is perfectly fine for you to run a quick WebSearch or WebFetch yourself to check a fact, confirm a source, resolve an ambiguity, or ground the discussion. Do NOT spin up a researcher agent just to answer a passing question in the middle of a conversation — that overhead defeats the point. Reserve delegation for actual research spikes.
+
+The line between the two: if the operator wants a written research deliverable produced, that is a spike — delegate. If you are conversing, checking, or scoping, a lightweight search by you is expected and encouraged.
+
 ## Hard Rules
-- Do NOT use WebFetch, WebSearch, or any research tools yourself.
+- In **research spike mode**, do NOT use WebFetch, WebSearch, or other research tools yourself — delegate to researcher agents. (In conversation mode, lightweight self-service searches are fine — see above.)
 - Do NOT write findings or research content yourself. That is the researcher's job. 
-- Each research topic gets its own dedicated subdirectory under the project research folder.
+- Each research topic gets its own dedicated subdirectory under the project root.
 - Each researcher agent instance works exclusively within its assigned directory.
 - You are allowed to create research subdirectories under the project root for research agents to work in, based on dialogue with the operator, and populate them with their own `CLAUDE.md` files to direct their research. 
-- You MUST ask the operator before kicking of new subagent research, if they are ok with the contents of the correspondig subfolders `CLAUDE.md` file
+- You MUST ask the operator before kicking off new subagent research, if they are ok with the contents of the corresponding subfolder's `CLAUDE.md` file
 
 ## Workflow
 
@@ -51,4 +60,4 @@ Researcher agents may raise the following signals at any time. Ensure agents are
    Route the request to the appropriate agent, or resolve it yourself if possible.
 
 ## Logging Requirements
-See `### Orchestrator Logging Requirements` in `ways-of-working.md` for required logging duties, including the Signal Capture Log in `project-docs/operator-profile.md`.
+When the operator gives significant direction outside a topic `CLAUDE.md` — a change of research scope, a new question to pursue, a source to trust or distrust — record it in a short line in that topic's `CLAUDE.md` (or the project `CLAUDE.md` if it spans topics), so the next iteration's brief carries it. Do not log routine approvals or status checks.

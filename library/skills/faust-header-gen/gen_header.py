@@ -181,7 +181,12 @@ def generate_header(class_name: str, functions: list, guard: str) -> str:
 
 
 def generate_exports(functions: list) -> str:
-    """One _symbol per line, suitable for an .exp linker exports file."""
+    """One _symbol per line, suitable for an .exp linker exports file.
+
+    This is the macOS Mach-O format (ld64 -exported_symbols_list), where C
+    symbols carry a leading underscore. GNU ld / lld on Linux need a version
+    script or --dynamic-list instead, with no underscore prefix.
+    """
     return '\n'.join(f'_{fn_name}' for _, fn_name, _ in functions) + '\n'
 
 
@@ -194,7 +199,7 @@ def main():
     parser.add_argument('input', help='Faust-generated .c file')
     parser.add_argument('-o', '--output', help='Output header path (default: stdout)')
     parser.add_argument('--guard', help='Include guard name (default: CLASSNAME_H)')
-    parser.add_argument('--exports', help='Write a linker .exp exports file to this path')
+    parser.add_argument('--exports', help='Write a macOS (Mach-O, leading-underscore) .exp exports file to this path')
     args = parser.parse_args()
 
     input_path = Path(args.input)
@@ -234,7 +239,7 @@ def main():
         out_path.write_text(header)
         print(f'Wrote: {out_path}', file=sys.stderr)
     else:
-        print(header)
+        sys.stdout.write(header)
 
     if args.exports:
         exp_path = Path(args.exports)

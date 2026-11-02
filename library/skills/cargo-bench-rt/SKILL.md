@@ -43,7 +43,7 @@ criterion_main!(benches);
 The arguments are in `$ARGUMENTS`. Pass them directly to the bench script:
 
 ```bash
-bash "$(dirname "$0")/bench.sh" $ARGUMENTS
+bash .claude/skills/cargo-bench-rt/bench.sh $ARGUMENTS
 ```
 
 - Argument 1: crate directory.
@@ -79,4 +79,6 @@ bash bench.sh ./rust/audio-dsp process_128 --budget-pct 2
 
 ## Where the baseline lives
 
-Criterion stores baselines under `target/criterion/<bench-name>/<baseline>/`. This skill uses baseline name `rt-baseline` and expects projects to commit it under `benches/baselines/<bench-name>/` — see the script for the exact mapping.
+Criterion stores baselines under `<target-dir>/criterion/<bench-name>/<baseline>/`. The script resolves `<target-dir>` with `cargo metadata` (so workspace roots, `CARGO_TARGET_DIR` and `.cargo/config.toml` overrides are honoured), falling back to `$CARGO_TARGET_DIR` or `<crate>/target`. This skill uses baseline name `rt-baseline` and expects projects to commit it under `benches/baselines/<bench-name>/` — see the script for the exact mapping.
+
+**A baseline is only comparable on the hardware that recorded it.** Criterion stores absolute timings, so a baseline committed from a laptop and checked on a CI runner (or on a different runner type, or a shared runner with noisy neighbours) measures the machine difference, not your change. Either record the baseline on the same machine class that runs the check (e.g. a dedicated self-hosted runner, re-saved whenever that hardware changes), or run the regression check locally before and after a change rather than in shared CI.

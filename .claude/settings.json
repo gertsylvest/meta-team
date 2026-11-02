@@ -23,9 +23,6 @@
       "Bash(sed:*)",
       "Bash(echo:*)",
       "Bash(command:*)",
-      "Read(/Users/gts/dev/**)",
-      "Write(/Users/gts/dev/**)",
-      "Edit(/Users/gts/dev/**)",
       "Bash(claude:*)",
       "Bash(git:*)",
       "Bash(gh:*)",
@@ -37,6 +34,32 @@
       "Bash(cc:*)",
       "Bash(gcc:*)",
       "Bash(clang:*)"
+    ]
+  },
+  "env": {
+    "MESSAGING_TEAM": "meta-team"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/.claude/skills/team-messaging/scripts/inbox-hook.sh\"; [ -f \"$f\" ] && bash \"$f\" session || true"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$CLAUDE_PROJECT_DIR/.claude/skills/team-messaging/scripts/inbox-hook.sh\"; [ -f \"$f\" ] && bash \"$f\" prompt || true"
+          }
+        ]
+      }
     ]
   }
 }

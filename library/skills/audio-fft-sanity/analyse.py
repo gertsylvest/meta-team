@@ -3,14 +3,25 @@
 audio-fft-sanity: FFT-based sanity check for audio output files.
 
 Checks: clipping, silence, fundamental frequency, THD, SNR.
-Supports .wav files and raw interleaved float32 binary files.
+Supports .wav files (8-bit unsigned, 16/24/32-bit integer PCM, float32/float64 —
+24-bit is read by scipy into the top bits of int32, so it scales like 32-bit) and
+raw interleaved float32 binary files.
+
+FUNDAMENTAL, THD and SNR assume a tonal (single-pitch) signal. For noise, sweeps
+or impulses pass --level-only to run just CLIPPING and SILENCE.
 
 Exit code 0 = all checks passed, 1 = one or more checks failed.
 """
 
 import sys
 import argparse
-import numpy as np
+
+try:
+    import numpy as np
+except ImportError:
+    print("FAIL  SETUP  numpy not installed — run: pip install numpy scipy "
+          "(inside a venv, or use pipx/uv)")
+    sys.exit(1)
 
 
 def load_audio(path, sample_rate=44100, channels=1):
@@ -19,11 +30,16 @@ def load_audio(path, sample_rate=44100, channels=1):
         try:
             from scipy.io import wavfile
         except ImportError:
-            sys.exit("FAIL  SETUP  scipy not installed — run: pip install numpy scipy")
+            sys.exit("FAIL  SETUP  scipy not installed — run: pip install numpy scipy "
+                     "(inside a venv, or use pipx/uv)")
         sr, data = wavfile.read(path)
-        if data.dtype == np.int16:
+        if data.dtype == np.uint8:
+            # 8-bit WAV is unsigned, centred on 128
+            data = (data.astype(np.float32) - 128.0) / 128.0
+        elif data.dtype == np.int16:
             data = data.astype(np.float32) / 32768.0
         elif data.dtype == np.int32:
+            # 32-bit PCM, and 24-bit PCM (scipy left-justifies it into int32)
             data = data.astype(np.float32) / 2147483648.0
         else:
             data = data.astype(np.float32)
@@ -40,7 +56,8 @@ def load_audio(path, sample_rate=44100, channels=1):
         return sample_rate, data.copy()
 
 
-def analyse(samples, sample_rate, expected_freq=None, thd_max=5.0, snr_min=40.0):
+def analyse(samples, sample_rate, expected_freq=None, thd_max=5.0, snr_min=40.0,
+            level_only=False):
     """Run all checks. Prints results and returns True if all pass."""
     results = []
     passed = True
@@ -71,6 +88,10 @@ def analyse(samples, sample_rate, expected_freq=None, thd_max=5.0, snr_min=40.0)
         passed = False
     else:
         results.append(f"PASS  SILENCE     RMS {rms_db:.1f} dBFS")
+
+    if level_only:
+        results.append("SKIP  FUNDAMENTAL/THD/SNR (--level-only: non-tonal input)")
+        return _report(results, passed, sample_rate, N)
 
     # -------------------------------------------------------------------------
     # FFT
@@ -150,9 +171,10 @@ def analyse(samples, sample_rate, expected_freq=None, thd_max=5.0, snr_min=40.0)
     else:
         results.append(f"PASS  SNR          {snr:.1f} dB (min {snr_min:.1f} dB)")
 
-    # -------------------------------------------------------------------------
-    # Print results
-    # -------------------------------------------------------------------------
+    return _report(results, passed, sample_rate, N)
+
+
+def _report(results, passed, sample_rate, N):
     print(f"File: {path_hint}  |  SR: {sample_rate} Hz  |  Frames: {N}")
     print()
     for line in results:
@@ -169,12 +191,6 @@ path_hint = ""
 def main():
     global path_hint
 
-    try:
-        import numpy  # noqa: F401
-    except ImportError:
-        print("FAIL  SETUP  numpy not installed — run: pip install numpy scipy")
-        sys.exit(1)
-
     parser = argparse.ArgumentParser(description="FFT-based audio sanity check")
     parser.add_argument("file", help=".wav or raw float32 audio file")
     parser.add_argument("--freq", type=float, default=None,
@@ -187,6 +203,9 @@ def main():
                         help="Maximum acceptable THD in percent (default: 5.0)")
     parser.add_argument("--snr-min", type=float, default=40.0,
                         help="Minimum acceptable SNR in dB (default: 40.0)")
+    parser.add_argument("--level-only", action="store_true",
+                        help="Only check CLIPPING and SILENCE (for noise, sweeps, impulses; "
+                             "FUNDAMENTAL/THD/SNR assume a tonal signal)")
     args = parser.parse_args()
 
     path_hint = args.file
@@ -194,7 +213,8 @@ def main():
     ok = analyse(samples, sr,
                  expected_freq=args.freq,
                  thd_max=args.thd_max,
-                 snr_min=args.snr_min)
+                 snr_min=args.snr_min,
+                 level_only=args.level_only)
     sys.exit(0 if ok else 1)
 
 

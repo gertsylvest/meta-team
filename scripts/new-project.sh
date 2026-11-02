@@ -7,16 +7,16 @@
 #     --type development \
 #     --purpose "A short description of the project" \
 #     --team dev-team \
-#     --orchestrator dev-orchestrator \
+#     --orchestrator dev-team-orchestrator \
 #     --agents "pm,architect,developer" \
 #     --skills "log-pattern-scan" \
 #     --rules "ways-of-working,documentation-structure"
 #
-# --type:   "development" or "research" (default: development)
+# --type:   "development", "research", or "ops" (default: development)
 # --purpose: short project description written into the root CLAUDE.md
 # --parent: parent directory for the new project (default: ~/dev)
-#           Use this to create projects in subdirectories, e.g. --parent ~/dev/audiospace
-#           creates the project at ~/dev/audiospace/<project-name>
+#           Use this to create projects in subdirectories, e.g. --parent ~/dev/<group>
+#           creates the project at ~/dev/<group>/<project-name>
 #
 # The script creates <parent>/<project-name> with the following structure:
 #   .claude/
@@ -80,18 +80,29 @@ if [[ "$PROJECT_TYPE" == "development" ]]; then
   mkdir -p "$PROJECT_DIR/project-docs"
   echo "  [+] project-docs/"
 
-  # taskmd: tasks folder (gitignored, local-only) + config
-  mkdir -p "$PROJECT_DIR/tasks"
-  echo "  [+] tasks/"
+  # taskmd: tasks folder lives UNDER the documentation folder (project-docs/tasks) —
+  # committed (see .gitignore note); nesting it under project-docs keeps the whole
+  # doc+backlog tree together for a single sync and one git-tracked subtree.
+  mkdir -p "$PROJECT_DIR/project-docs/tasks"
+  echo "  [+] project-docs/tasks/"
 
   cat > "$PROJECT_DIR/.taskmd.yaml" <<'EOF'
-dir: ./tasks
+dir: ./project-docs/tasks
 EOF
   echo "  [+] .taskmd.yaml"
 
+  # Single-developer mode: commit the whole scaffold (CLAUDE.md, .claude/, project-docs/,
+  # tasks/, memory/). Only genuinely machine-local / ephemeral state is excluded.
   cat > "$PROJECT_DIR/.gitignore" <<'EOF'
-# Task files are local-only and not committed
-/tasks
+.DS_Store
+.claude/settings.local.json
+
+# STRAY agent-memory trees at NON-ROOT paths. Agent memory resolves against the
+# DISPATCH's cwd, so a lane dispatched from a subdirectory writes a fresh tree there
+# that NO dispatch ever reads. The leading `**/*/` requires at least one directory
+# component, so the canonical ROOT `.claude/agent-memory-local/` is NOT matched and
+# root memory stays tracked — which is the point: memory IS committed, strays are not.
+**/*/.claude/agent-memory-local/
 EOF
   echo "  [+] .gitignore"
 
@@ -103,6 +114,71 @@ EOF
   else
     echo "  [!] taskmd-cli rule not found in library — skipping"
   fi
+
+  # Seed the standing-backlog convention doc (project-docs/project/issue-backlog.md)
+  mkdir -p "$PROJECT_DIR/project-docs/project"
+  ISSUE_BACKLOG_SRC="$TEMPLATES_DIR/issue-backlog.md"
+  if [[ -f "$ISSUE_BACKLOG_SRC" ]]; then
+    cp "$ISSUE_BACKLOG_SRC" "$PROJECT_DIR/project-docs/project/issue-backlog.md"
+    echo "  [+] project-docs/project/issue-backlog.md (standing-backlog convention)"
+  else
+    echo "  [!] issue-backlog template not found in templates/ — skipping"
+  fi
+fi
+
+if [[ "$PROJECT_TYPE" == "ops" ]]; then
+  # Ops projects are runbook-shaped, not sprint-shaped: documentation/ subfolders,
+  # no project-docs/. Work flows kanban-style on a taskmd board under documentation/tasks.
+  for sub in runbooks incidents change-log infra metrics tasks; do
+    mkdir -p "$PROJECT_DIR/documentation/$sub"
+  done
+  echo "  [+] documentation/{runbooks,incidents,change-log,infra,metrics,tasks}/"
+
+  cat > "$PROJECT_DIR/.taskmd.yaml" <<'EOF'
+dir: ./documentation/tasks
+EOF
+  echo "  [+] .taskmd.yaml (kanban board)"
+
+  TASKMD_CLI_SRC="$LIBRARY_DIR/rules/taskmd-cli.md"
+  if [[ -f "$TASKMD_CLI_SRC" ]]; then
+    cp "$TASKMD_CLI_SRC" "$PROJECT_DIR/.claude/rules/taskmd-cli.md"
+    echo "  [+] Rule: taskmd-cli (auto-included for ops projects)"
+  else
+    echo "  [!] taskmd-cli rule not found in library — skipping"
+  fi
+
+  # Seed minimal artifacts so they always exist (per ops-ways-of-working.md)
+  cat > "$PROJECT_DIR/documentation/metrics/build-deploy-metrics.md" <<'EOF'
+# Build & Deploy Metrics
+
+Minimal build/deploy metrics log (80/20 — only measure what would change a decision).
+Maintained by the orchestrator; the metric set is revised in the Ops Improvement Review.
+
+| Date | Event | Environment | Build time | Retries | Outcome |
+|------|-------|-------------|-----------|---------|---------|
+EOF
+  cat > "$PROJECT_DIR/documentation/infra/environments.md" <<'EOF'
+# Environments Registry
+
+Canonical record of the environments this team manages — the source of truth agents read on startup.
+
+| Name | Purpose | Host / access | Stack | Current version |
+|------|---------|---------------|-------|-----------------|
+EOF
+  echo "  [+] seeded metrics/build-deploy-metrics.md + infra/environments.md"
+
+  cat > "$PROJECT_DIR/.gitignore" <<'EOF'
+.DS_Store
+.claude/settings.local.json
+
+# STRAY agent-memory trees at NON-ROOT paths. Agent memory resolves against the
+# DISPATCH's cwd, so a lane dispatched from a subdirectory writes a fresh tree there
+# that NO dispatch ever reads. The leading `**/*/` requires at least one directory
+# component, so the canonical ROOT `.claude/agent-memory-local/` is NOT matched and
+# root memory stays tracked — which is the point: memory IS committed, strays are not.
+**/*/.claude/agent-memory-local/
+EOF
+  echo "  [+] .gitignore"
 fi
 
 # --- Copy team definition (placed in rules/teams/ subfolder, always named team-definition.md) ---
@@ -181,6 +257,17 @@ if [[ -n "$SKILLS" ]]; then
   done
 fi
 
+# --- git-history rule: auto-included for development and ops projects (both push to shared remotes) ---
+if [[ "$PROJECT_TYPE" == "development" || "$PROJECT_TYPE" == "ops" ]]; then
+  GIT_HISTORY_SRC="$LIBRARY_DIR/rules/git-history.md"
+  if [[ -f "$GIT_HISTORY_SRC" ]]; then
+    cp "$GIT_HISTORY_SRC" "$PROJECT_DIR/.claude/rules/git-history.md"
+    echo "  [+] Rule: git-history (auto-included for $PROJECT_TYPE projects)"
+  else
+    echo "  [!] git-history rule not found in library — skipping"
+  fi
+fi
+
 # --- Copy rules ---
 if [[ -n "$RULES" ]]; then
   IFS=',' read -ra RULE_LIST <<< "$RULES"
@@ -197,16 +284,81 @@ if [[ -n "$RULES" ]]; then
 fi
 
 # --- Copy .claude/settings.json from template ---
-if [[ "$PROJECT_TYPE" == "research" ]]; then
-  SETTINGS_TEMPLATE="$TEMPLATES_DIR/settings-research.json"
-else
-  SETTINGS_TEMPLATE="$TEMPLATES_DIR/settings-development.json"
-fi
+case "$PROJECT_TYPE" in
+  research) SETTINGS_TEMPLATE="$TEMPLATES_DIR/settings-research.json" ;;
+  ops)      SETTINGS_TEMPLATE="$TEMPLATES_DIR/settings-ops.json" ;;
+  *)        SETTINGS_TEMPLATE="$TEMPLATES_DIR/settings-development.json" ;;
+esac
 if [[ -f "$SETTINGS_TEMPLATE" ]]; then
   cp "$SETTINGS_TEMPLATE" "$PROJECT_DIR/.claude/settings.json"
   echo "  [+] .claude/settings.json (from $PROJECT_TYPE template)"
 else
   echo "  [!] Settings template not found: $SETTINGS_TEMPLATE — skipping"
+fi
+
+# --- Default skill: team-messaging (every project gets the cross-team channel) ---
+# Included for ALL project types regardless of agents/orchestrator selected — the
+# file-based messaging channel is machine-wide infrastructure, not a per-team opt-in.
+TM_SRC="$LIBRARY_DIR/skills/team-messaging"
+if [[ -d "$TM_SRC" ]]; then
+  mkdir -p "$PROJECT_DIR/.claude/skills"
+  cp -r "$TM_SRC" "$PROJECT_DIR/.claude/skills/team-messaging"
+  echo "  [+] Skill: team-messaging (default — all projects)"
+
+  # Resolve the shared channel root with the SAME precedence as the skill helper,
+  # then register this team in the channel so it can send and receive mail (v2:
+  # a single flat inbox/ + a `teams` registry; team name = project name). The
+  # inbox hooks that surface mail around each turn come from the settings template.
+  # Precedence: $MESSAGING_ROOT -> ~/.messaging (if it exists) -> ~/dev/messaging
+  # (if it exists; legacy) -> ~/.messaging (default). The root is never created here.
+  MSG_ROOT="${MESSAGING_ROOT:-}"
+  if [[ -z "$MSG_ROOT" ]]; then
+    if [[ -e "$HOME/.messaging" ]]; then MSG_ROOT="$HOME/.messaging"
+    elif [[ -d "$HOME/dev/messaging" ]]; then MSG_ROOT="$HOME/dev/messaging"
+    else MSG_ROOT="$HOME/.messaging"; fi
+  fi
+  TM_MSG="$PROJECT_DIR/.claude/skills/team-messaging/scripts/msg.sh"
+  if [[ -d "$MSG_ROOT" ]]; then
+    mkdir -p "$MSG_ROOT/inbox"; touch "$MSG_ROOT/teams"
+    grep -qxF "$PROJECT_NAME" "$MSG_ROOT/teams" || printf '%s\n' "$PROJECT_NAME" >> "$MSG_ROOT/teams"
+    echo "  [+] messaging: registered '$PROJECT_NAME' in $MSG_ROOT/teams"
+  else
+    echo "  [!] messaging channel root not found ($MSG_ROOT) — skill copied, but the team is NOT registered."
+    echo "      Create the channel and register this team with:"
+    echo "        MESSAGING_ROOT=\"$MSG_ROOT\" bash \"$TM_MSG\" init"
+    echo "        MESSAGING_ROOT=\"$MSG_ROOT\" bash \"$TM_MSG\" register $PROJECT_NAME"
+  fi
+
+  # Record team identity so the skill knows who it is. This is project identity
+  # (stable across machines), so it belongs in the committed settings.json env,
+  # not settings.local.json — a fresh clone must still know its own team name.
+  SETTINGS_FILE="$PROJECT_DIR/.claude/settings.json"
+  if [[ ! -f "$SETTINGS_FILE" ]]; then
+    echo "  [!] no $SETTINGS_FILE — env.MESSAGING_TEAM not set; add \"env\": {\"MESSAGING_TEAM\": \"$PROJECT_NAME\"} once it exists"
+  elif ! command -v jq >/dev/null 2>&1; then
+    echo "  [!] jq not found — env.MESSAGING_TEAM NOT written. Add"
+    echo "      \"env\": {\"MESSAGING_TEAM\": \"$PROJECT_NAME\"} to $SETTINGS_FILE by hand (or install jq first)"
+  elif _tmp="$(jq --arg t "$PROJECT_NAME" '.env = ((.env // {}) + {MESSAGING_TEAM: $t})' "$SETTINGS_FILE")"; then
+    printf '%s\n' "$_tmp" > "$SETTINGS_FILE"
+    echo "  [+] settings.json: env.MESSAGING_TEAM=$PROJECT_NAME"
+  else
+    echo "  [!] jq could not update $SETTINGS_FILE — env.MESSAGING_TEAM NOT written"
+  fi
+else
+  echo "  [!] team-messaging skill not found in library — skipping default skill"
+fi
+
+# --- Default skill: markdown-diagrams-tables (every project gets aligned diagrams/tables) ---
+# Included for ALL project types: any project writes markdown docs, and the recurring
+# "boxes misaligned / tables don't render" problem is universal. Depends on D2 (auto-installs
+# user-local if missing) and Prettier (via npx, no install).
+MDT_SRC="$LIBRARY_DIR/skills/markdown-diagrams-tables"
+if [[ -d "$MDT_SRC" ]]; then
+  mkdir -p "$PROJECT_DIR/.claude/skills"
+  cp -r "$MDT_SRC" "$PROJECT_DIR/.claude/skills/markdown-diagrams-tables"
+  echo "  [+] Skill: markdown-diagrams-tables (default — all projects)"
+else
+  echo "  [!] markdown-diagrams-tables skill not found in library — skipping default skill"
 fi
 
 # --- Write CLAUDE.md ---

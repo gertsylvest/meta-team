@@ -1,0 +1,14 @@
+# Price multipliers relative to each model's base input price, used to weight token classes into "eq".
+# Source: https://platform.claude.com/docs/en/about-claude/pricing (checked 2026-10-13).
+# Re-check when a new model family appears. Environment variables W_IN, W_CW5, W_CW1H, W_OUT,
+# W_CR_DEFAULT and CR_TABLE override these values.
+in	1
+cw5	1.25	# cache write, 5-minute lifetime
+cw1h	2	# cache write, 1-hour lifetime
+out	5	# output, thinking included
+cr_default	0.1	# cache read for a model not listed below
+# Cache read by model: cr:<model-id prefix>, first match wins.
+cr:claude-fable-5-1	0.025
+cr:claude-mythos-5-1	0.025
+cr:claude-opus-5-5	0.05
+cr:claude-sonnet-5-5	0.05

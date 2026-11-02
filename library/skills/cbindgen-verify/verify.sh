@@ -32,30 +32,39 @@ fi
 echo "=== cbindgen Verify: $CRATE_DIR vs $COMMITTED_HEADER ==="
 echo ""
 
-CRATE_NAME=$(grep -m1 -E '^\s*name\s*=' "$CRATE_DIR/Cargo.toml" | sed -E 's/.*=\s*"([^"]+)".*/\1/')
+# Read `name` from the [package] table only — a [lib], [[bin]] or dependency
+# table earlier in the file can also carry a `name =` key.
+CRATE_NAME=$(awk '
+  /^[[:space:]]*\[/ { in_pkg = ($0 ~ /^[[:space:]]*\[package\][[:space:]]*(#.*)?$/) ; next }
+  in_pkg && /^[[:space:]]*name[[:space:]]*=/ {
+    sub(/^[^=]*=[[:space:]]*"/, ""); sub(/".*$/, ""); print; exit
+  }' "$CRATE_DIR/Cargo.toml")
+if [[ -z "$CRATE_NAME" ]]; then
+  echo "ERROR  no [package] name found in $CRATE_DIR/Cargo.toml"
+  exit 1
+fi
 GENERATED=$(mktemp)
+DIFF_OUT=$(mktemp)
+trap 'rm -f "$GENERATED" "$DIFF_OUT"' EXIT
 
-if cbindgen --config "$CRATE_DIR/cbindgen.toml" --crate "$CRATE_NAME" --output "$GENERATED" --quiet 2>/dev/null; then
+if cbindgen --config "$CRATE_DIR/cbindgen.toml" --crate "$CRATE_NAME" --output "$GENERATED" --quiet "$CRATE_DIR" 2>/dev/null; then
   echo "PASS   CBINDGEN      header regenerated for crate '$CRATE_NAME'"
 else
   echo "FAIL   CBINDGEN      cbindgen failed for crate '$CRATE_NAME'"
-  cbindgen --config "$CRATE_DIR/cbindgen.toml" --crate "$CRATE_NAME" --output "$GENERATED" 2>&1 | sed 's/^/         /'
-  rm -f "$GENERATED"
+  cbindgen --config "$CRATE_DIR/cbindgen.toml" --crate "$CRATE_NAME" --output "$GENERATED" "$CRATE_DIR" 2>&1 | sed 's/^/         /'
   exit 1
 fi
 echo ""
 
-if diff -u "$COMMITTED_HEADER" "$GENERATED" > /tmp/cbindgen-diff.$$; then
+if diff -u "$COMMITTED_HEADER" "$GENERATED" > "$DIFF_OUT"; then
   echo "PASS   DIFF          committed header matches regenerated output"
-  rm -f "$GENERATED" /tmp/cbindgen-diff.$$
   exit 0
 else
   echo "FAIL   DIFF          committed header is out of date:"
   echo ""
-  sed 's/^/         /' /tmp/cbindgen-diff.$$
+  sed 's/^/         /' "$DIFF_OUT"
   echo ""
   echo "         To accept the changes:"
-  echo "           cbindgen --config $CRATE_DIR/cbindgen.toml --crate $CRATE_NAME --output $COMMITTED_HEADER"
-  rm -f "$GENERATED" /tmp/cbindgen-diff.$$
+  echo "           cbindgen --config $CRATE_DIR/cbindgen.toml --crate $CRATE_NAME --output $COMMITTED_HEADER $CRATE_DIR"
   exit 1
 fi
